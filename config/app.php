@@ -13,7 +13,9 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'SpiceLoop'),
+    
+    'weekly_subscription_charge' => env('WEEKLY_SUBSCRIPTION_CHARGE', 50.00),
 
     /*
     |--------------------------------------------------------------------------

@@ -1,59 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SpiceLoop - Home Cooked Food Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern Laravel + React (Inertia.js) application for managing a home-cooked food service business specializing in South Asian cuisine.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 1. Weekly Subscription Service
+- Customers can subscribe to weekly meal plans (Monday-Friday)
+- Daily meal selection available for the next day
+- Selection window closes at 12am
+- Admin can set weekly menu options and subscription charges
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 2. Menu Ordering
+- Dynamic menu with ordering functionality
+- City-based availability
+- Checkout form (payment integration can be added later)
+- Admin can manage menu items and prices
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 3. Catering & Special Orders
+- Form for catering requests
+- Event details and special requirements
+- Admin can view and manage all catering requests
 
-## Learning Laravel
+### 4. Admin Panel
+- Dashboard with statistics
+- Menu management
+- Order management
+- Catering request management
+- City management
+- Weekly menu configuration
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Tech Stack
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Backend:** Laravel 12
+- **Frontend:** React 19 + Inertia.js
+- **Styling:** Tailwind CSS 4
+- **Authentication:** Laravel Sanctum
+- **Permissions:** Spatie Laravel Permission
 
-## Laravel Sponsors
+## Installation
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. Clone the repository:
+```bash
+git clone https://github.com/wsaeed77/spice-loop.git
+cd spice-loop
+```
 
-### Premium Partners
+2. Install dependencies:
+```bash
+composer install
+npm install
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+3. Set up environment:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Contributing
+4. Configure database in `.env` (SQLite is used by default)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+5. Run migrations and seeders:
+```bash
+php artisan migrate
+php artisan db:seed
+```
 
-## Code of Conduct
+6. Start the development servers:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**Terminal 1:**
+```bash
+php artisan serve
+```
 
-## Security Vulnerabilities
+**Terminal 2:**
+```bash
+npm run dev
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+7. Access the application:
+- Homepage: http://localhost:8000
+- Admin Login: http://localhost:8000/login
+  - Email: admin@spiceloop.com
+  - Password: password
+
+## Default Admin Credentials
+
+- **Email:** admin@spiceloop.com
+- **Password:** password
+
+⚠️ **Important:** Change the admin password in production!
+
+## Application Structure
+
+### Models
+- `User` - Users with subscriber/admin roles
+- `MenuItem` - Menu items
+- `City` - Available cities for delivery
+- `Subscription` - User subscriptions
+- `WeeklyMenuOption` - Weekly menu configuration
+- `DailySelection` - User daily meal selections
+- `Order` - Customer orders
+- `OrderItem` - Order line items
+- `CateringRequest` - Catering requests
+
+### Controllers
+- `HomeController` - Homepage
+- `MenuController` - Menu display
+- `OrderController` - Order processing
+- `SubscriptionController` - Subscription management
+- `CateringController` - Catering requests
+- `SubscriberController` - Subscriber dashboard
+- `Admin/*` - Admin panel controllers
+
+### React Components
+- `Home.jsx` - Homepage with branding
+- `Menu.jsx` - Menu with cart and checkout
+- `Subscription.jsx` - Subscription form
+- `Catering.jsx` - Catering request form
+- `Auth/Login.jsx` - Login page
+- `Subscriber/Dashboard.jsx` - Subscriber dashboard
+- `Admin/Dashboard.jsx` - Admin dashboard
+
+## Color Scheme
+
+The application uses SpiceLoop brand colors:
+- **Spice Red:** #8B0000
+- **Spice Maroon:** #800020
+- **Spice Orange:** #FF8C00
+- **Spice Gold:** #FFD700
+- **Spice Cream:** #FFF8DC
+
+## Environment Variables
+
+Add to `.env`:
+```
+WEEKLY_SUBSCRIPTION_CHARGE=50.00
+```
+
+## Production Deployment
+
+1. Build assets:
+```bash
+npm run build
+```
+
+2. Optimize Laravel:
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+3. Set up proper database (MySQL/PostgreSQL)
+
+4. Configure web server (Nginx/Apache)
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT License
