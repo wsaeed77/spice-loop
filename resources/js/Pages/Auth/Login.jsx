@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import Layout from '../Components/Layout';
+import Layout from '../../Components/Layout';
 
 export default function Login({ auth, errors: authErrors }) {
     const { data, setData, post, processing, errors } = useForm({
