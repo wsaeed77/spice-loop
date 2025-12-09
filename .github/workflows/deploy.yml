@@ -1,0 +1,156 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  PHP_VERSION: '8.2'
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, bcmath, curl, gd, mysql, zip, intl
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: |
+          composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy-package
+          # Copy necessary files
+          cp -r app bootstrap config database public resources routes storage artisan composer.json composer.lock .env.example deploy-package/
+          cp -r public/build deploy-package/public/ 2>/dev/null || true
+          # Create .gitkeep for storage directories
+          touch deploy-package/storage/.gitkeep
+          touch deploy-package/storage/app/.gitkeep
+          touch deploy-package/storage/app/public/.gitkeep
+          touch deploy-package/storage/framework/.gitkeep
+          touch deploy-package/storage/framework/cache/.gitkeep
+          touch deploy-package/storage/framework/sessions/.gitkeep
+          touch deploy-package/storage/framework/views/.gitkeep
+          touch deploy-package/storage/logs/.gitkeep
+          # Create deployment script
+          cat > deploy-package/deploy.sh << 'DEPLOY_SCRIPT'
+          #!/bin/bash
+          set -e
+          cd $(dirname "$0")
+          
+          echo "🚀 Starting deployment..."
+          
+          # Install PHP dependencies
+          composer install --optimize-autoloader --no-dev --no-interaction
+          
+          # Set permissions
+          chown -R www-data:www-data .
+          chmod -R 755 .
+          chmod -R 775 storage bootstrap/cache
+          
+          # Create storage link if it doesn't exist
+          php artisan storage:link || true
+          
+          # Run migrations
+          php artisan migrate --force
+          
+          # Clear and cache configuration
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          
+          # Restart queue workers
+          supervisorctl restart spice-loop-worker:* || true
+          
+          # Reload PHP-FPM
+          systemctl reload php8.2-fpm || true
+          
+          echo "✅ Deployment complete!"
+          DEPLOY_SCRIPT
+          chmod +x deploy-package/deploy.sh
+
+      - name: Create deployment archive
+        run: |
+          cd deploy-package
+          tar -czf ../deployment.tar.gz .
+          cd ..
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          source: "deployment.tar.gz"
+          target: "/tmp/"
+          strip_components: 0
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script: |
+            set -e
+            APP_DIR="${{ secrets.EC2_APP_DIR || '/var/www/spice-loop' }}"
+            
+            echo "📦 Extracting deployment package..."
+            cd $APP_DIR
+            
+            # Backup current .env if it exists
+            if [ -f $APP_DIR/.env ]; then
+              cp $APP_DIR/.env $APP_DIR/.env.backup
+            fi
+            
+            # Extract new files
+            sudo tar -xzf /tmp/deployment.tar.gz -C $APP_DIR --overwrite
+            
+            # Restore .env if it was backed up
+            if [ -f $APP_DIR/.env.backup ]; then
+              mv $APP_DIR/.env.backup $APP_DIR/.env
+            fi
+            
+            echo "🔧 Running deployment script..."
+            sudo bash $APP_DIR/deploy.sh
+            
+            echo "🧹 Cleaning up..."
+            rm -f /tmp/deployment.tar.gz
+            
+            echo "✅ Deployment completed successfully!"
+

@@ -12,4 +12,21 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+        cors: {
+            origin: true,
+            credentials: true,
+        },
+        hmr: {
+            host: 'localhost',
+            protocol: 'ws',
+        },
+    },
+    build: {
+        outDir: 'public/build',
+        emptyOutDir: true,
+    },
 });
