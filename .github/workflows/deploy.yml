@@ -111,7 +111,14 @@ jobs:
           # Run migrations (only if .env exists and database is configured)
           if [ -f .env ]; then
             echo "🗄️ Running migrations..."
-            $PHP_CMD artisan migrate --force || echo "⚠️ Migration failed - check database credentials in .env"
+            # Test database connection first
+            if $PHP_CMD artisan db:show &>/dev/null; then
+              $PHP_CMD artisan migrate --force || echo "⚠️ Migration failed - check database credentials in .env"
+            else
+              echo "⚠️ Cannot connect to database - skipping migrations"
+              echo "⚠️ Please configure database credentials in .env file"
+              echo "⚠️ Required: DB_DATABASE, DB_USERNAME, DB_PASSWORD"
+            fi
           else
             echo "⚠️ .env file not found - skipping migrations"
             echo "⚠️ Please create .env file with database credentials before running migrations"
@@ -196,7 +203,7 @@ jobs:
             
             # Backup current .env if it exists
             if [ -f $APP_DIR/.env ]; then
-              cp $APP_DIR/.env $APP_DIR/.env.backup
+              sudo cp $APP_DIR/.env $APP_DIR/.env.backup
               echo "✅ Backed up existing .env file"
             else
               echo "⚠️ No .env file found - will need to create one"
@@ -205,21 +212,24 @@ jobs:
             # Extract new files
             sudo tar -xzf /tmp/deployment.tar.gz -C $APP_DIR --overwrite
             
+            # Fix ownership of extracted files first
+            sudo chown -R www-data:www-data $APP_DIR
+            
             # Restore .env if it was backed up
             if [ -f $APP_DIR/.env.backup ]; then
-              mv $APP_DIR/.env.backup $APP_DIR/.env
+              sudo mv $APP_DIR/.env.backup $APP_DIR/.env
+              sudo chown www-data:www-data $APP_DIR/.env
               echo "✅ Restored .env file"
             elif [ ! -f $APP_DIR/.env ]; then
               echo "⚠️ WARNING: .env file not found after extraction"
               echo "⚠️ Creating .env from .env.example (you'll need to configure it)"
               if [ -f $APP_DIR/.env.example ]; then
-                cp $APP_DIR/.env.example $APP_DIR/.env
+                sudo cp $APP_DIR/.env.example $APP_DIR/.env
+                sudo chown www-data:www-data $APP_DIR/.env
+                sudo chmod 600 $APP_DIR/.env
                 echo "⚠️ Please configure database credentials in .env file"
               fi
             fi
-            
-            # Fix ownership of extracted files
-            sudo chown -R www-data:www-data $APP_DIR
             
             echo "🔧 Running deployment script..."
             sudo -u www-data bash $APP_DIR/deploy.sh || sudo bash $APP_DIR/deploy.sh
