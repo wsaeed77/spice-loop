@@ -281,7 +281,7 @@ export default function Layout({ children, auth }) {
                     href={`https://wa.me/${settings.whatsapp_number}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:bg-[#20BA5A] transition-all z-50 group"
+                    className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:bg-[#20BA5A] transition-all z-50 group"
                     aria-label="Chat on WhatsApp"
                 >
                     <svg 

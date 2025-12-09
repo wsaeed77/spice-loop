@@ -168,10 +168,10 @@ export default function Menu({ auth, menuItems, cities, flash }) {
 
                 {/* Mobile Cart Summary Bar (sticky at bottom on mobile) */}
                 {cart.length > 0 && (
-                    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-spice-orange shadow-lg z-40">
+                    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-spice-orange shadow-lg z-[60]">
                         <div className="max-w-7xl mx-auto px-4 py-3">
                             <div className="flex items-center justify-between">
-                                <div>
+                                <div className="flex-1">
                                     <p className="text-sm text-gray-600">Cart ({cart.length} {cart.length === 1 ? 'item' : 'items'})</p>
                                     <p className="text-lg font-bold text-spice-maroon">£{total.toFixed(2)}</p>
                                 </div>
@@ -179,7 +179,7 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                     onClick={() => {
                                         document.getElementById('cart-sidebar')?.scrollIntoView({ behavior: 'smooth' });
                                     }}
-                                    className="bg-spice-orange hover:bg-spice-gold text-white px-6 py-2 rounded-lg font-semibold transition"
+                                    className="bg-spice-orange hover:bg-spice-gold text-white px-4 sm:px-6 py-2 rounded-lg font-semibold transition ml-3 flex-shrink-0"
                                 >
                                     View Cart
                                 </button>
