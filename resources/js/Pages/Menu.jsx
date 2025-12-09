@@ -5,6 +5,38 @@ import Layout from '../Components/Layout';
 export default function Menu({ auth, menuItems, cities, flash }) {
     const [cart, setCart] = useState([]);
     const [showCheckout, setShowCheckout] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    
+    // Map database categories to main display categories
+    const categoryMapping = {
+        // Main Course categories
+        'Curries': 'Main Course',
+        'Rice Dishes': 'Main Course',
+        'Biryani': 'Main Course',
+        'Vegetarian': 'Main Course',
+        'Non-Vegetarian': 'Main Course',
+        // Sides categories
+        'Breads': 'Sides',
+        'Appetizers': 'Sides',
+        'Sides': 'Sides',
+        // Sweet categories
+        'Desserts': 'Sweet',
+    };
+    
+    // Main category tabs
+    const mainCategories = ['all', 'Main Course', 'Sides', 'Sweet'];
+    
+    // Filter items by main category
+    const getItemsByMainCategory = (mainCategory) => {
+        if (mainCategory === 'all') return menuItems;
+        return menuItems?.filter(item => {
+            const itemMainCategory = categoryMapping[item.category] || item.category;
+            return itemMainCategory === mainCategory;
+        });
+    };
+    
+    // Get filtered menu items based on selected category
+    const filteredMenuItems = getItemsByMainCategory(selectedCategory);
 
     const { data, setData, post, processing, errors } = useForm({
         city_id: '',
@@ -66,13 +98,60 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                     </div>
                 )}
 
+                {/* Category Tabs */}
+                <div className="mb-8">
+                    <div className="flex flex-wrap gap-3 border-b border-gray-200 pb-4">
+                        {mainCategories.map((mainCategory) => {
+                            const itemsInCategory = getItemsByMainCategory(mainCategory);
+                            const isActive = selectedCategory === mainCategory;
+                            const displayName = mainCategory === 'all' ? 'All Items' : mainCategory;
+                            
+                            return (
+                                <button
+                                    key={mainCategory}
+                                    onClick={() => setSelectedCategory(mainCategory)}
+                                    className={`px-6 py-3 rounded-t-lg font-semibold transition-all ${
+                                        isActive
+                                            ? 'bg-spice-orange text-white border-b-2 border-spice-orange'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {displayName}
+                                    {itemsInCategory && itemsInCategory.length > 0 && (
+                                        <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                                            isActive ? 'bg-white text-spice-orange' : 'bg-spice-orange text-white'
+                                        }`}>
+                                            {itemsInCategory.length}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Menu Items */}
                     <div className="lg:col-span-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {menuItems?.map((item) => (
+                        {filteredMenuItems && filteredMenuItems.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {filteredMenuItems.map((item) => (
                                 <div key={item.id} className="bg-white rounded-lg shadow-md p-6 border border-spice-orange">
-                                    <div className="h-48 bg-gray-200 rounded mb-4"></div>
+                                    <div className="h-48 rounded mb-4 overflow-hidden bg-gray-200 flex items-center justify-center">
+                                        {item.image ? (
+                                            <img 
+                                                src={item.image} 
+                                                alt={item.name}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
+                                            />
+                                        ) : null}
+                                        {!item.image && (
+                                            <span className="text-gray-400">No Image</span>
+                                        )}
+                                    </div>
                                     <h3 className="text-xl font-bold text-spice-maroon mb-2">{item.name}</h3>
                                     <p className="text-gray-600 mb-4">{item.description}</p>
                                     <div className="flex justify-between items-center">
@@ -85,8 +164,13 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                         </button>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 bg-white rounded-lg border border-spice-orange">
+                                <p className="text-gray-500 text-lg">No items found in this category.</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Cart Sidebar */}

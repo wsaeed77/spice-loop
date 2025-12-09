@@ -133,7 +133,7 @@ export default function Layout({ children, auth }) {
                         {!footerLogoError ? (
                             <div className="mb-8 mt-6 flex justify-center">
                                 <img 
-                                    src="/images/spice-loop.png" 
+                                    src="/images/spice-loop-light.png" 
                                     alt="SpiceLoop" 
                                     className="h-20 md:h-24 w-auto object-contain bg-white/5 rounded-xl backdrop-blur-sm"
                                     style={{ maxHeight: '96px', maxWidth: '220px', paddingTop: '12px', paddingBottom: '12px', paddingLeft: '16px', paddingRight: '16px' }}
