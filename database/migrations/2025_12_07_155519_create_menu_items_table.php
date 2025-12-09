@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('menu_items', function (Blueprint $table) {
+        if (!Schema::hasTable('menu_items')) {
+            Schema::create('menu_items', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
@@ -18,7 +19,8 @@ return new class extends Migration
             $table->boolean('is_available')->default(true);
             $table->boolean('is_subscription_item')->default(false);
             $table->timestamps();
-        });
+            });
+        }
     }
 
     public function down(): void

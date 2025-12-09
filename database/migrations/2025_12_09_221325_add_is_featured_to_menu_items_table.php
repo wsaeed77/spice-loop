@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('menu_items', function (Blueprint $table) {
-            $table->boolean('is_featured')->default(false)->after('is_subscription_item');
-        });
+        if (Schema::hasTable('menu_items') && !Schema::hasColumn('menu_items', 'is_featured')) {
+            Schema::table('menu_items', function (Blueprint $table) {
+                $table->boolean('is_featured')->default(false)->after('is_subscription_item');
+            });
+        }
     }
 
     /**
