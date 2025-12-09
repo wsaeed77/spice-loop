@@ -42,10 +42,13 @@ if [ ! -f .env ]; then
     php artisan key:generate
     
     read -p "Enter APP_URL (e.g., https://yourdomain.com): " APP_URL
-    read -p "Enter database name: " DB_NAME
-    read -p "Enter database username: " DB_USER
-    read -sp "Enter database password: " DB_PASSWORD
+    read -p "Enter database name (default: radiance_db): " DB_NAME
+    DB_NAME=${DB_NAME:-radiance_db}
+    read -p "Enter database username (default: radiance_user): " DB_USER
+    DB_USER=${DB_USER:-radiance_user}
+    read -sp "Enter database password (default: radiance_user): " DB_PASSWORD
     echo
+    DB_PASSWORD=${DB_PASSWORD:-radiance_user}
     
     # Update .env file
     sed -i "s|APP_URL=.*|APP_URL=${APP_URL}|" .env

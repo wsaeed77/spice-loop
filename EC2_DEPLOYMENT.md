@@ -36,10 +36,12 @@ The script will:
 
 **Note:** You'll be prompted for:
 - Domain name (or press Enter to use IP)
-- Database name (default: `spice_loop`)
-- Database username (default: `spice_user`)
-- Database password
+- Database name (default: `radiance_db` - matches existing setup)
+- Database username (default: `radiance_user` - matches existing setup)
+- Database password (default: `radiance_user` - matches existing setup)
 - Application directory (default: `/var/www/spice-loop`)
+
+**Note:** The default database credentials match your existing Radiance setup. You can press Enter to use defaults or enter different values.
 
 ### Step 3: Initial Application Deployment
 
@@ -164,9 +166,9 @@ APP_URL=https://yourdomain.com
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=spice_loop
-DB_USERNAME=spice_user
-DB_PASSWORD=your_password
+DB_DATABASE=radiance_db
+DB_USERNAME=radiance_user
+DB_PASSWORD=radiance_user
 
 SESSION_DRIVER=database
 CACHE_STORE=database

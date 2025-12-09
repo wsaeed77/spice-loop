@@ -34,12 +34,13 @@ print_status "Starting SpiceLoop server setup on Ubuntu..."
 
 # Get deployment information
 read -p "Enter your domain name (or press Enter to use IP address): " DOMAIN_NAME
-read -p "Enter database name (default: spice_loop): " DB_NAME
-DB_NAME=${DB_NAME:-spice_loop}
-read -p "Enter database username (default: spice_user): " DB_USER
-DB_USER=${DB_USER:-spice_user}
-read -sp "Enter database password: " DB_PASSWORD
+read -p "Enter database name (default: radiance_db): " DB_NAME
+DB_NAME=${DB_NAME:-radiance_db}
+read -p "Enter database username (default: radiance_user): " DB_USER
+DB_USER=${DB_USER:-radiance_user}
+read -sp "Enter database password (default: radiance_user): " DB_PASSWORD
 echo
+DB_PASSWORD=${DB_PASSWORD:-radiance_user}
 read -p "Enter application directory (default: /var/www/spice-loop): " APP_DIR
 APP_DIR=${APP_DIR:-/var/www/spice-loop}
 
@@ -81,17 +82,68 @@ apt-get install -y -qq \
 
 # Install MySQL
 print_status "Installing MySQL..."
+export DEBIAN_FRONTEND=noninteractive
 apt-get install -y -qq mysql-server
+
+# Start and enable MySQL
+print_status "Starting MySQL service..."
+systemctl start mysql
+systemctl enable mysql
+
+# Wait for MySQL to be ready
+print_status "Waiting for MySQL to be ready..."
+sleep 5
 
 # Secure MySQL and create database
 print_status "Setting up MySQL database..."
-mysql <<MYSQL_SCRIPT
+
+# Try to connect to MySQL (Ubuntu typically uses sudo mysql)
+MYSQL_CONNECTED=false
+
+if sudo mysql -e "SELECT 1" > /dev/null 2>&1; then
+    # MySQL is accessible via sudo (default Ubuntu setup)
+    print_status "Configuring MySQL with sudo access..."
+    sudo mysql <<MYSQL_SCRIPT
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASSWORD}';
 CREATE DATABASE IF NOT EXISTS ${DB_NAME};
 CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
 FLUSH PRIVILEGES;
 MYSQL_SCRIPT
+    MYSQL_CONNECTED=true
+elif mysql -u root -e "SELECT 1" > /dev/null 2>&1; then
+    # MySQL is accessible without password
+    print_status "Configuring MySQL without password..."
+    mysql -u root <<MYSQL_SCRIPT
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASSWORD}';
+CREATE DATABASE IF NOT EXISTS ${DB_NAME};
+CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
+FLUSH PRIVILEGES;
+MYSQL_SCRIPT
+    MYSQL_CONNECTED=true
+fi
+
+if [ "$MYSQL_CONNECTED" = false ]; then
+    # MySQL might need to be secured first
+    print_warning "Could not automatically configure MySQL."
+    print_warning "You may need to run MySQL setup manually."
+    print_warning ""
+    print_warning "Option 1: Run mysql_secure_installation"
+    print_warning "  sudo mysql_secure_installation"
+    print_warning ""
+    print_warning "Option 2: Configure manually via sudo mysql"
+    print_warning "  sudo mysql"
+    print_warning "  Then run:"
+    echo "    ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASSWORD}';"
+    echo "    CREATE DATABASE IF NOT EXISTS ${DB_NAME};"
+    echo "    CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';"
+    echo "    GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
+    echo "    FLUSH PRIVILEGES;"
+    echo "    EXIT;"
+    print_warning ""
+    print_warning "After MySQL is configured, you can continue with the deployment."
+fi
 
 # Install Node.js 18.x
 print_status "Installing Node.js 18.x..."
