@@ -167,8 +167,13 @@ supervisorctl start spice-loop-worker:*
 if [ ! -z "$DOMAIN" ] && [ "$DOMAIN" != "_" ]; then
     read -p "Setup SSL certificate with Let's Encrypt? (y/N): " SETUP_SSL
     if [ "$SETUP_SSL" == "y" ] || [ "$SETUP_SSL" == "Y" ]; then
-        read -p "Enter email for SSL certificate: " SSL_EMAIL
-        certbot --nginx -d $DOMAIN --non-interactive --agree-tos -m $SSL_EMAIL
+        if [ -f "$APP_DIR/scripts/setup-ssl.sh" ]; then
+            print_status "Running SSL setup script..."
+            bash $APP_DIR/scripts/setup-ssl.sh
+        else
+            read -p "Enter email for SSL certificate: " SSL_EMAIL
+            certbot --nginx -d $DOMAIN --non-interactive --agree-tos -m $SSL_EMAIL
+        fi
     fi
 fi
 
