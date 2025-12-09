@@ -108,9 +108,14 @@ jobs:
           # Create storage link if it doesn't exist
           $PHP_CMD artisan storage:link || true
           
-          # Run migrations
-          echo "🗄️ Running migrations..."
-          $PHP_CMD artisan migrate --force
+          # Run migrations (only if .env exists and database is configured)
+          if [ -f .env ]; then
+            echo "🗄️ Running migrations..."
+            $PHP_CMD artisan migrate --force || echo "⚠️ Migration failed - check database credentials in .env"
+          else
+            echo "⚠️ .env file not found - skipping migrations"
+            echo "⚠️ Please create .env file with database credentials before running migrations"
+          fi
           
           # Clear and cache configuration
           echo "⚡ Optimizing application..."
@@ -192,6 +197,9 @@ jobs:
             # Backup current .env if it exists
             if [ -f $APP_DIR/.env ]; then
               cp $APP_DIR/.env $APP_DIR/.env.backup
+              echo "✅ Backed up existing .env file"
+            else
+              echo "⚠️ No .env file found - will need to create one"
             fi
             
             # Extract new files
@@ -200,6 +208,14 @@ jobs:
             # Restore .env if it was backed up
             if [ -f $APP_DIR/.env.backup ]; then
               mv $APP_DIR/.env.backup $APP_DIR/.env
+              echo "✅ Restored .env file"
+            elif [ ! -f $APP_DIR/.env ]; then
+              echo "⚠️ WARNING: .env file not found after extraction"
+              echo "⚠️ Creating .env from .env.example (you'll need to configure it)"
+              if [ -f $APP_DIR/.env.example ]; then
+                cp $APP_DIR/.env.example $APP_DIR/.env
+                echo "⚠️ Please configure database credentials in .env file"
+              fi
             fi
             
             # Fix ownership of extracted files
