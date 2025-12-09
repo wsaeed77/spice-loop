@@ -20,7 +20,23 @@ export default function Catering({ auth, flash }) {
 
     return (
         <Layout auth={auth}>
-            <Head title="Catering - SpiceLoop" />
+            <Head>
+                <title>Catering Services - Milton Keynes Events | SpiceLoop</title>
+                <meta name="description" content="Professional catering services in Milton Keynes for parties, weddings, corporate events, and special occasions. Authentic South Asian cuisine for all your events." />
+                <meta name="keywords" content="catering services Milton Keynes, party catering Milton Keynes, event catering Milton Keynes, wedding catering Milton Keynes, corporate catering Milton Keynes, Indian catering Milton Keynes, South Asian catering UK" />
+                <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/catering` : '/catering'} />
+                
+                {/* Open Graph */}
+                <meta property="og:title" content="Catering Services - Milton Keynes Events | SpiceLoop" />
+                <meta property="og:description" content="Professional catering services in Milton Keynes for parties, weddings, corporate events, and special occasions. Authentic South Asian cuisine." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={typeof window !== 'undefined' ? `${window.location.origin}/catering` : '/catering'} />
+                
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content="Catering Services - Milton Keynes Events | SpiceLoop" />
+                <meta name="twitter:description" content="Professional catering services in Milton Keynes for parties, weddings, corporate events, and special occasions." />
+            </Head>
             
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="bg-spice-maroon text-white p-6 rounded-t-lg text-center">

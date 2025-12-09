@@ -16,7 +16,50 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems }) 
 
     return (
         <Layout auth={auth}>
-            <Head title="Home - SpiceLoop" />
+            <Head>
+                <title>SpiceLoop - Authentic South Asian Cuisine in Milton Keynes, UK</title>
+                <meta name="description" content="SpiceLoop offers authentic home-cooked South Asian cuisine in Milton Keynes, UK. Order delicious Indian, Pakistani, and Bangladeshi meals. Weekly meal subscriptions and catering services available." />
+                <meta name="keywords" content="South Asian food Milton Keynes, Indian food delivery Milton Keynes, Pakistani food Milton Keynes, Bangladeshi food Milton Keynes, home cooked meals Milton Keynes, weekly meal subscription Milton Keynes, catering services Milton Keynes, authentic curry Milton Keynes, biryani Milton Keynes, Indian takeaway Milton Keynes UK" />
+                <link rel="canonical" href={typeof window !== 'undefined' ? window.location.origin : 'https://spiceloop.com'} />
+                
+                {/* Open Graph */}
+                <meta property="og:title" content="SpiceLoop - Authentic South Asian Cuisine in Milton Keynes, UK" />
+                <meta property="og:description" content="Home-cooked authentic South Asian meals delivered in Milton Keynes. Weekly subscriptions, menu orders, and catering services available." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={typeof window !== 'undefined' ? window.location.origin : 'https://spiceloop.com'} />
+                <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/images/hero-banner.jpg` : '/images/hero-banner.jpg'} />
+                <meta property="og:locale" content="en_GB" />
+                
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="SpiceLoop - Authentic South Asian Cuisine in Milton Keynes, UK" />
+                <meta name="twitter:description" content="Home-cooked authentic South Asian meals delivered in Milton Keynes. Weekly subscriptions, menu orders, and catering services available." />
+                <meta name="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/images/hero-banner.jpg` : '/images/hero-banner.jpg'} />
+                
+                {/* Structured Data - Local Business */}
+                <script type="application/ld+json" dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "FoodEstablishment",
+                        "name": "SpiceLoop",
+                        "description": "Authentic South Asian Cuisine - Home-cooked meals delivered in Milton Keynes, UK",
+                        "address": {
+                            "@type": "PostalAddress",
+                            "addressLocality": "Milton Keynes",
+                            "addressRegion": "Buckinghamshire",
+                            "addressCountry": "GB"
+                        },
+                        "areaServed": {
+                            "@type": "City",
+                            "name": "Milton Keynes"
+                        },
+                        "servesCuisine": ["Indian", "Pakistani", "Bangladeshi", "South Asian"],
+                        "priceRange": "££",
+                        "url": typeof window !== 'undefined' ? window.location.origin : 'https://spiceloop.com',
+                        "sameAs": []
+                    })
+                }} />
+            </Head>
             
             {/* Hero Section */}
             <div 

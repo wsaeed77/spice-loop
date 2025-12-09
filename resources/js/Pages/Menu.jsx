@@ -106,7 +106,23 @@ export default function Menu({ auth, menuItems, cities, flash }) {
 
     return (
         <Layout auth={auth}>
-            <Head title="Menu - SpiceLoop" />
+            <Head>
+                <title>Menu - Authentic South Asian Food in Milton Keynes | SpiceLoop</title>
+                <meta name="description" content="Browse our full menu of authentic South Asian dishes in Milton Keynes. Order delicious curries, biryanis, breads, and desserts. Home-cooked meals delivered to your door." />
+                <meta name="keywords" content="South Asian menu Milton Keynes, Indian food menu Milton Keynes, curry menu Milton Keynes, biryani Milton Keynes, naan bread Milton Keynes, Indian takeaway menu Milton Keynes, food delivery Milton Keynes" />
+                <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/menu` : '/menu'} />
+                
+                {/* Open Graph */}
+                <meta property="og:title" content="Menu - Authentic South Asian Food in Milton Keynes | SpiceLoop" />
+                <meta property="og:description" content="Browse our full menu of authentic South Asian dishes. Order delicious curries, biryanis, breads, and desserts delivered in Milton Keynes." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={typeof window !== 'undefined' ? `${window.location.origin}/menu` : '/menu'} />
+                
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content="Menu - Authentic South Asian Food in Milton Keynes | SpiceLoop" />
+                <meta name="twitter:description" content="Browse our full menu of authentic South Asian dishes. Order delicious curries, biryanis, breads, and desserts delivered in Milton Keynes." />
+            </Head>
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h1 className="text-4xl font-bold text-spice-maroon mb-8">Our Menu</h1>

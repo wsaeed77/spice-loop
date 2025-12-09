@@ -26,7 +26,23 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
 
     return (
         <Layout auth={auth}>
-            <Head title="Subscription - SpiceLoop" />
+            <Head>
+                <title>Weekly Meal Subscription - Milton Keynes | SpiceLoop</title>
+                <meta name="description" content="Subscribe to our weekly meal plan in Milton Keynes. Select your meals daily from Monday to Friday. Fresh, home-cooked South Asian cuisine delivered to your door." />
+                <meta name="keywords" content="weekly meal subscription Milton Keynes, meal plan Milton Keynes, weekly food subscription UK, South Asian meal subscription, Indian food subscription Milton Keynes, meal delivery service Milton Keynes" />
+                <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/subscription` : '/subscription'} />
+                
+                {/* Open Graph */}
+                <meta property="og:title" content="Weekly Meal Subscription - Milton Keynes | SpiceLoop" />
+                <meta property="og:description" content="Subscribe to our weekly meal plan. Select your meals daily from Monday to Friday. Fresh, home-cooked South Asian cuisine delivered in Milton Keynes." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={typeof window !== 'undefined' ? `${window.location.origin}/subscription` : '/subscription'} />
+                
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content="Weekly Meal Subscription - Milton Keynes | SpiceLoop" />
+                <meta name="twitter:description" content="Subscribe to our weekly meal plan. Select your meals daily from Monday to Friday. Fresh, home-cooked South Asian cuisine delivered in Milton Keynes." />
+            </Head>
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h1 className="text-4xl font-bold text-spice-maroon mb-8 text-center">Weekly Subscription</h1>
