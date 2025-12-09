@@ -1,6 +1,6 @@
 # SpiceLoop - Home Cooked Food Application
 
-A modern Laravel + React (Inertia.js) application for managing a home-cooked food service business specializing in South Asian cuisine.
+A modern Laravel + React (Inertia.js) application for managing a home-cooked food service business specializing in Authentic South Asian cuisine.
 
 ## Features
 

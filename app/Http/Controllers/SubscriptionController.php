@@ -27,14 +27,20 @@ class SubscriptionController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
+            'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
             'address' => 'required|string',
             'city' => 'required|string|max:255',
         ]);
 
-        // Store subscription request - admin will create account
-        // In production, you might want to store this in a separate table
+        \App\Models\SubscriptionRequest::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
+            'city' => $validated['city'],
+            'status' => 'pending',
+        ]);
 
         return redirect()->route('subscription')->with('message', 'Subscription request submitted! We will contact you soon to set up your account.');
     }

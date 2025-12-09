@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SubscriptionRequestController;
 use App\Http\Controllers\Admin\WeeklyMenuController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CateringController;
@@ -121,4 +122,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Settings Management
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    
+    // Subscription Requests Management
+    Route::get('/subscription-requests', [SubscriptionRequestController::class, 'index'])->name('subscription-requests.index');
+    Route::get('/subscription-requests/{id}', [SubscriptionRequestController::class, 'show'])->name('subscription-requests.show');
+    Route::patch('/subscription-requests/{id}/status', [SubscriptionRequestController::class, 'updateStatus'])->name('subscription-requests.update-status');
 });
