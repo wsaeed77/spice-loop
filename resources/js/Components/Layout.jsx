@@ -54,7 +54,7 @@ export default function Layout({ children, auth }) {
             <nav className="bg-white shadow-md">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center min-h-[64px] py-2">
-                        <div className="flex">
+                        <div className="flex items-center">
                             <Link href="/" className="flex items-center hover:opacity-90 transition-opacity pr-4">
                                 {!logoError ? (
                                     <img 
@@ -68,6 +68,7 @@ export default function Layout({ children, auth }) {
                                     <span className="text-2xl font-bold text-spice-maroon">SpiceLoop</span>
                                 )}
                             </Link>
+                            {/* Desktop Navigation */}
                             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                                 <Link href="/" className="border-transparent text-gray-500 hover:border-spice-orange hover:text-spice-maroon inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                     Home
@@ -83,7 +84,26 @@ export default function Layout({ children, auth }) {
                                 </Link>
                             </div>
                         </div>
-                        <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+                        <div className="flex items-center space-x-2">
+                            {/* Mobile Menu Button */}
+                            <button
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                className="sm:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-spice-maroon hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-spice-orange"
+                                aria-expanded="false"
+                            >
+                                <span className="sr-only">Open main menu</span>
+                                {!mobileMenuOpen ? (
+                                    <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                ) : (
+                                    <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                )}
+                            </button>
+                            {/* Desktop Right Side */}
+                            <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
                             {formattedPhone && (
                                 <a 
                                     href={`tel:${settings.contact_phone.replace(/\D/g, '')}`}
@@ -118,8 +138,101 @@ export default function Layout({ children, auth }) {
                                     Login
                                 </Link>
                             )}
+                            </div>
                         </div>
                     </div>
+                    
+                    {/* Mobile Menu */}
+                    {mobileMenuOpen && (
+                        <div className="sm:hidden border-t border-gray-200">
+                            <div className="px-2 pt-2 pb-3 space-y-1">
+                                <Link
+                                    href="/"
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    Home
+                                </Link>
+                                <Link
+                                    href="/menu"
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    Menu
+                                </Link>
+                                <Link
+                                    href="/subscription"
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    Subscription
+                                </Link>
+                                <Link
+                                    href="/catering"
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    Catering
+                                </Link>
+                                
+                                {/* Mobile Phone Number */}
+                                {formattedPhone && (
+                                    <a 
+                                        href={`tel:${settings.contact_phone.replace(/\D/g, '')}`}
+                                        className="block px-3 py-2 rounded-md text-base font-medium text-spice-orange hover:bg-gray-50"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        <div className="flex items-center">
+                                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                            </svg>
+                                            {formattedPhone}
+                                        </div>
+                                    </a>
+                                )}
+                                
+                                {/* Mobile Auth Links */}
+                                {auth?.user ? (
+                                    <>
+                                        {auth.user.roles?.some(r => r.name === 'admin') ? (
+                                            <Link
+                                                href="/admin/dashboard"
+                                                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                                onClick={() => setMobileMenuOpen(false)}
+                                            >
+                                                Admin
+                                            </Link>
+                                        ) : (
+                                            <Link
+                                                href="/subscriber/dashboard"
+                                                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                                onClick={() => setMobileMenuOpen(false)}
+                                            >
+                                                Dashboard
+                                            </Link>
+                                        )}
+                                        <button
+                                            onClick={() => {
+                                                setMobileMenuOpen(false);
+                                                router.post(route('logout'));
+                                            }}
+                                            className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                        >
+                                            Logout
+                                        </button>
+                                    </>
+                                ) : (
+                                    <Link
+                                        href="/login"
+                                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Login
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </nav>
 
