@@ -2,9 +2,18 @@ import { Head, Link, router } from '@inertiajs/react';
 import Layout from '../../../Components/Layout';
 
 export default function MenuIndex({ auth, menuItems, flash }) {
-    const handleDelete = (id) => {
-        if (confirm('Are you sure you want to delete this menu item?')) {
-            router.delete(`/admin/menu/${id}`);
+    const handleDelete = (id, e) => {
+        e.preventDefault();
+        if (confirm('Are you sure you want to delete this menu item? This action cannot be undone.')) {
+            router.delete(`/admin/menu/${id}`, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Success message will come from flash
+                },
+                onError: (errors) => {
+                    alert('Error deleting menu item: ' + (errors.message || 'Please try again.'));
+                }
+            });
         }
     };
 
@@ -84,8 +93,9 @@ export default function MenuIndex({ auth, menuItems, flash }) {
                                                     Edit
                                                 </Link>
                                                 <button
-                                                    onClick={() => handleDelete(item.id)}
-                                                    className="text-red-600 hover:text-red-900"
+                                                    type="button"
+                                                    onClick={(e) => handleDelete(item.id, e)}
+                                                    className="text-red-600 hover:text-red-900 cursor-pointer"
                                                 >
                                                     Delete
                                                 </button>

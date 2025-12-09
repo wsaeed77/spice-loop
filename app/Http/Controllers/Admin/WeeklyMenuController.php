@@ -45,8 +45,9 @@ class WeeklyMenuController extends Controller
         return redirect()->route('admin.weekly-menu.index')->with('message', 'Weekly menu option saved successfully!');
     }
 
-    public function destroy(WeeklyMenuOption $weeklyMenuOption)
+    public function destroy($id)
     {
+        $weeklyMenuOption = WeeklyMenuOption::findOrFail($id);
         $weeklyMenuOption->delete();
 
         return redirect()->route('admin.weekly-menu.index')->with('message', 'Weekly menu option deleted successfully!');

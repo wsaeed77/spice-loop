@@ -20,17 +20,53 @@ class OrderController extends Controller
         ]);
     }
 
-    public function show(Order $order)
+    public function show($id)
     {
-        $order->load(['city', 'orderItems.menuItem', 'user']);
+        $order = Order::with(['city', 'orderItems.menuItem', 'user'])->findOrFail($id);
 
         return Inertia::render('Admin/Orders/Show', [
-            'order' => $order,
+            'order' => [
+                'id' => $order->id,
+                'user_id' => $order->user_id,
+                'city_id' => $order->city_id,
+                'total_amount' => $order->total_amount,
+                'status' => $order->status,
+                'customer_name' => $order->customer_name,
+                'customer_email' => $order->customer_email,
+                'customer_phone' => $order->customer_phone,
+                'customer_address' => $order->customer_address,
+                'notes' => $order->notes,
+                'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at,
+                'city' => $order->city ? [
+                    'id' => $order->city->id,
+                    'name' => $order->city->name,
+                ] : null,
+                'user' => $order->user ? [
+                    'id' => $order->user->id,
+                    'name' => $order->user->name,
+                    'email' => $order->user->email,
+                ] : null,
+                'orderItems' => $order->orderItems->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'quantity' => $item->quantity,
+                        'price' => $item->price,
+                        'menuItem' => $item->menuItem ? [
+                            'id' => $item->menuItem->id,
+                            'name' => $item->menuItem->name,
+                            'price' => $item->menuItem->price,
+                        ] : null,
+                    ];
+                }),
+            ],
         ]);
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, $id)
     {
+        $order = Order::findOrFail($id);
+        
         $validated = $request->validate([
             'status' => 'required|in:pending,confirmed,preparing,ready,delivered,cancelled',
         ]);

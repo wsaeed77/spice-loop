@@ -115,5 +115,5 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Weekly Menu Management
     Route::get('/weekly-menu', [WeeklyMenuController::class, 'index'])->name('weekly-menu.index');
     Route::post('/weekly-menu', [WeeklyMenuController::class, 'store'])->name('weekly-menu.store');
-    Route::delete('/weekly-menu/{weeklyMenuOption}', [WeeklyMenuController::class, 'destroy'])->name('weekly-menu.destroy');
+    Route::delete('/weekly-menu/{id}', [WeeklyMenuController::class, 'destroy'])->name('weekly-menu.destroy');
 });
