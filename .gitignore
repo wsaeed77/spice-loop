@@ -16,6 +16,9 @@
 /public/build
 /public/hot
 /public/storage
+/public/videos/*.mp4
+/public/videos/*.mov
+/public/videos/*.avi
 /storage/*.key
 /storage/pail
 /vendor

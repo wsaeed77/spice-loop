@@ -4,6 +4,7 @@ import Layout from '../Components/Layout';
 
 export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems }) {
     const [heroImageError, setHeroImageError] = useState(false);
+    const [videoError, setVideoError] = useState(false);
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dayLabels = {
         monday: 'Monday',
@@ -19,23 +20,37 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems }) 
             
             {/* Hero Section */}
             <div 
-                className="relative bg-gradient-to-r from-spice-maroon to-spice-red text-white py-20 bg-cover bg-center bg-no-repeat min-h-[500px] flex items-center"
-                style={!heroImageError ? {
+                className="relative bg-gradient-to-r from-spice-maroon to-spice-red text-white py-20 bg-cover bg-center bg-no-repeat min-h-[500px] flex items-center overflow-hidden"
+                style={videoError && !heroImageError ? {
                     backgroundImage: 'url(/images/hero-banner.jpg)',
                 } : {}}
             >
-                {/* Overlay for better text readability */}
-                <div className="absolute inset-0 bg-gradient-to-r from-spice-maroon/85 to-spice-red/85"></div>
+                {/* Background Video */}
+                {!videoError && (
+                    <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={() => setVideoError(true)}
+                    >
+                        <source src="/videos/banner-video.mp4" type="video/mp4" />
+                    </video>
+                )}
                 
-                {/* Hidden image to detect if it exists */}
-                {!heroImageError && (
+                {/* Fallback Background Image */}
+                {videoError && !heroImageError && (
                     <img 
                         src="/images/hero-banner.jpg" 
                         alt="" 
-                        className="hidden"
+                        className="absolute inset-0 w-full h-full object-cover"
                         onError={() => setHeroImageError(true)}
                     />
                 )}
+                
+                {/* Overlay for better text readability */}
+                <div className="absolute inset-0 bg-gradient-to-r from-spice-maroon/85 to-spice-red/85"></div>
                 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
                     <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">Welcome to SpiceLoop</h1>
