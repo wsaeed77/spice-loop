@@ -1,0 +1,172 @@
+import { Head, Link, useForm } from '@inertiajs/react';
+import Layout from '../../../Components/Layout';
+
+export default function MenuEdit({ auth, menuItem }) {
+    const { data, setData, put, processing, errors } = useForm({
+        name: menuItem?.name || '',
+        description: menuItem?.description || '',
+        price: menuItem?.price || '',
+        image: menuItem?.image || '',
+        category: menuItem?.category || '',
+        is_available: menuItem?.is_available ?? true,
+        is_subscription_item: menuItem?.is_subscription_item ?? false,
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        put(`/admin/menu/${menuItem.id}`);
+    };
+
+    const categories = [
+        'Curries',
+        'Rice Dishes',
+        'Breads',
+        'Appetizers',
+        'Desserts',
+        'Beverages',
+        'Vegetarian',
+        'Non-Vegetarian',
+    ];
+
+    return (
+        <Layout auth={auth}>
+            <Head title="Edit Menu Item - SpiceLoop" />
+            
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="mb-8">
+                    <h1 className="text-4xl font-bold text-spice-maroon mb-2">Edit Menu Item</h1>
+                    <Link
+                        href="/admin/menu"
+                        className="text-spice-orange hover:text-spice-maroon"
+                    >
+                        ← Back to Menu
+                    </Link>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-8 border border-spice-orange">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                                Item Name *
+                            </label>
+                            <input
+                                type="text"
+                                id="name"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                required
+                            />
+                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                        </div>
+
+                        <div>
+                            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                                Description
+                            </label>
+                            <textarea
+                                id="description"
+                                value={data.description}
+                                onChange={(e) => setData('description', e.target.value)}
+                                rows="4"
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                            />
+                            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Price ($) *
+                                </label>
+                                <input
+                                    type="number"
+                                    id="price"
+                                    step="0.01"
+                                    min="0"
+                                    value={data.price}
+                                    onChange={(e) => setData('price', e.target.value)}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                    required
+                                />
+                                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+                            </div>
+
+                            <div>
+                                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Category
+                                </label>
+                                <select
+                                    id="category"
+                                    value={data.category}
+                                    onChange={(e) => setData('category', e.target.value)}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                >
+                                    <option value="">Select a category</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                                {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+                                Image URL
+                            </label>
+                            <input
+                                type="url"
+                                id="image"
+                                value={data.image}
+                                onChange={(e) => setData('image', e.target.value)}
+                                placeholder="https://example.com/image.jpg"
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                            />
+                            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+                        </div>
+
+                        <div className="flex items-center space-x-6">
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_available}
+                                    onChange={(e) => setData('is_available', e.target.checked)}
+                                    className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Available for ordering</span>
+                            </label>
+
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_subscription_item}
+                                    onChange={(e) => setData('is_subscription_item', e.target.checked)}
+                                    className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Include in subscription menu</span>
+                            </label>
+                        </div>
+
+                        <div className="flex justify-end space-x-4 pt-4">
+                            <Link
+                                href="/admin/menu"
+                                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                            >
+                                Cancel
+                            </Link>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="px-6 py-2 bg-spice-orange hover:bg-spice-gold text-white rounded-lg font-semibold transition disabled:opacity-50"
+                            >
+                                {processing ? 'Updating...' : 'Update Menu Item'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </Layout>
+    );
+}
+
