@@ -27,13 +27,35 @@ jobs:
             echo "🚀 Starting deployment..."
             cd $APP_DIR
             
+            # Fix git ownership if needed
+            echo "🔧 Fixing git ownership..."
+            git config --local --add safe.directory $APP_DIR 2>/dev/null || true
+            
             # Pull latest code
             echo "📥 Pulling latest code..."
             git fetch origin
             git reset --hard origin/main || git reset --hard origin/master
             
+            # Check PHP version and use PHP 8.4 if available
+            if command -v php8.4 &> /dev/null; then
+              PHP_CMD="php8.4"
+              echo "✅ Using PHP 8.4"
+            elif php -v | grep -q "8.4"; then
+              PHP_CMD="php"
+              echo "✅ Using PHP 8.4 (default)"
+            else
+              PHP_CMD="php"
+              echo "⚠️ Warning: PHP 8.4 not found, using default PHP"
+              php -v
+            fi
+            
+            # Set COMPOSER_ALLOW_SUPERUSER for root execution
+            export COMPOSER_ALLOW_SUPERUSER=1
+            
             # Install PHP dependencies
             echo "📦 Installing PHP dependencies..."
+            $PHP_CMD /usr/local/bin/composer install --optimize-autoloader --no-dev --no-interaction || \
+            $PHP_CMD $(which composer) install --optimize-autoloader --no-dev --no-interaction || \
             composer install --optimize-autoloader --no-dev --no-interaction
             
             # Install Node.js dependencies
@@ -52,20 +74,25 @@ jobs:
             sudo chmod -R 775 $APP_DIR/bootstrap/cache
             
             # Create storage link if it doesn't exist
-            php artisan storage:link || true
+            $PHP_CMD artisan storage:link || true
             
-            # Run migrations
+            # Run migrations (test connection first)
             echo "🗄️ Running migrations..."
-            php artisan migrate --force
+            if $PHP_CMD artisan db:show &>/dev/null; then
+              $PHP_CMD artisan migrate --force || echo "⚠️ Migration failed - check database credentials"
+            else
+              echo "⚠️ Cannot connect to database - skipping migrations"
+              echo "⚠️ Please configure database credentials in .env file"
+            fi
             
             # Clear and cache configuration
             echo "⚡ Optimizing application..."
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            $PHP_CMD artisan config:clear
+            $PHP_CMD artisan route:clear
+            $PHP_CMD artisan view:clear
+            $PHP_CMD artisan config:cache
+            $PHP_CMD artisan route:cache
+            $PHP_CMD artisan view:cache
             
             # Restart queue workers
             echo "🔄 Restarting queue workers..."
