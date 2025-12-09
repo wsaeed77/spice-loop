@@ -60,12 +60,12 @@ export default function Layout({ children, auth }) {
                                     <img 
                                         src="/images/spice-loop.png" 
                                         alt="SpiceLoop" 
-                                        className="h-14 md:h-18 w-auto object-contain drop-shadow-sm"
-                                        style={{ maxHeight: '72px', maxWidth: '180px', paddingTop: '8px', paddingBottom: '8px' }}
+                                        className="h-16 sm:h-14 md:h-18 w-auto object-contain drop-shadow-sm"
+                                        style={{ maxHeight: '96px', maxWidth: '240px', paddingTop: '8px', paddingBottom: '8px' }}
                                         onError={() => setLogoError(true)}
                                     />
                                 ) : (
-                                    <span className="text-2xl font-bold text-spice-maroon">SpiceLoop</span>
+                                    <span className="text-3xl sm:text-2xl font-bold text-spice-maroon">SpiceLoop</span>
                                 )}
                             </Link>
                             {/* Desktop Navigation */}
