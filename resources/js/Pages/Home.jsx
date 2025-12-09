@@ -54,7 +54,7 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems }) 
                 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
                     <h1 className="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">Welcome to SpiceLoop</h1>
-                    <p className="text-xl md:text-2xl mb-8 drop-shadow-md">HOME COOKED FOOD - South Asian Cuisine</p>
+                    <p className="text-xl md:text-2xl mb-8 drop-shadow-md">HOME COOKED FOOD - Authentic South Asian Cuisine</p>
                     <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
                         <Link href="/menu" className="bg-spice-orange hover:bg-spice-gold text-white px-8 py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-xl transform hover:scale-105">
                             Order Now
