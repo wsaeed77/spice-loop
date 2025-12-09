@@ -9,14 +9,24 @@ use Spatie\Permission\Models\Role;
 
 class AdminSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        // Create admin role
-        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $subscriberRole = Role::firstOrCreate(['name' => 'subscriber', 'guard_name' => 'web']);
+        // Create roles
+        $adminRole = Role::firstOrCreate(
+            ['name' => 'admin', 'guard_name' => 'web'],
+            ['name' => 'admin', 'guard_name' => 'web']
+        );
+        
+        $subscriberRole = Role::firstOrCreate(
+            ['name' => 'subscriber', 'guard_name' => 'web'],
+            ['name' => 'subscriber', 'guard_name' => 'web']
+        );
 
-        // Create admin user
-        $admin = User::firstOrCreate(
+        // Create or update admin user
+        $admin = User::updateOrCreate(
             ['email' => 'admin@spiceloop.com'],
             [
                 'name' => 'Admin User',
@@ -25,23 +35,21 @@ class AdminSeeder extends Seeder
             ]
         );
 
-        // Assign role using DB directly
-        $roleExists = \DB::table('model_has_roles')
-            ->where('model_type', User::class)
-            ->where('model_id', $admin->id)
-            ->where('role_id', $adminRole->id)
-            ->exists();
-            
-        if (!$roleExists) {
-            \DB::table('model_has_roles')->insert([
-                'role_id' => $adminRole->id,
-                'model_type' => User::class,
-                'model_id' => $admin->id,
-            ]);
+        // Assign admin role using Spatie's method
+        if (!$admin->hasRole('admin')) {
+            $admin->assignRole($adminRole);
         }
 
-        $this->command->info('Admin user created:');
-        $this->command->info('Email: admin@spiceloop.com');
-        $this->command->info('Password: password');
+        // Output success message
+        $this->command->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->command->info('  ✅ Admin user created successfully!');
+        $this->command->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->command->newLine();
+        $this->command->info('  📧 Email: admin@spiceloop.com');
+        $this->command->info('  🔑 Password: password');
+        $this->command->info('  👤 Role: Admin');
+        $this->command->newLine();
+        $this->command->warn('  ⚠️  IMPORTANT: Change the password in production!');
+        $this->command->newLine();
     }
 }
