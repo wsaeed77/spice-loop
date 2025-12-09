@@ -9,11 +9,6 @@ use Inertia\Inertia;
 
 class CateringController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:admin']);
-    }
-
     public function index()
     {
         $cateringRequests = CateringRequest::latest()->paginate(20);

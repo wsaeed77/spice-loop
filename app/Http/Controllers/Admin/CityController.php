@@ -9,11 +9,6 @@ use Inertia\Inertia;
 
 class CityController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:admin']);
-    }
-
     public function index()
     {
         $cities = City::latest()->get();

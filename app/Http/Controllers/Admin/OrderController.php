@@ -9,11 +9,6 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:admin']);
-    }
-
     public function index()
     {
         $orders = Order::with(['city', 'orderItems.menuItem', 'user'])

@@ -10,11 +10,6 @@ use Inertia\Inertia;
 
 class WeeklyMenuController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'role:admin']);
-    }
-
     public function index()
     {
         $weeklyMenu = WeeklyMenuOption::with('menuItem')
