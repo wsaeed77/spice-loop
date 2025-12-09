@@ -6,6 +6,8 @@ export default function Menu({ auth, menuItems, cities, flash }) {
     const [cart, setCart] = useState([]);
     const [showCheckout, setShowCheckout] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [showCartMessage, setShowCartMessage] = useState(false);
+    const [addedItemName, setAddedItemName] = useState('');
     
     // Map database categories to main display categories
     const categoryMapping = {
@@ -55,6 +57,23 @@ export default function Menu({ auth, menuItems, cities, flash }) {
         } else {
             setCart([...cart, { ...item, quantity: 1 }]);
         }
+        
+        // Show success message
+        setAddedItemName(item.name);
+        setShowCartMessage(true);
+        
+        // Scroll cart into view on mobile after a short delay
+        setTimeout(() => {
+            const cartElement = document.getElementById('cart-sidebar');
+            if (cartElement && window.innerWidth < 1024) {
+                cartElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }, 100);
+        
+        // Hide message after 3 seconds
+        setTimeout(() => {
+            setShowCartMessage(false);
+        }, 3000);
     };
 
     const removeFromCart = (itemId) => {
@@ -98,6 +117,23 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                     </div>
                 )}
 
+                {/* Cart Success Message */}
+                {showCartMessage && (
+                    <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-[fadeIn_0.3s_ease-in-out] max-w-sm mx-4">
+                        <div className="bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 border-2 border-green-600">
+                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <div className="flex-1">
+                                <span className="font-semibold text-sm sm:text-base block">{addedItemName} added to cart!</span>
+                                {cart.length > 0 && (
+                                    <span className="text-xs opacity-90 block mt-1">Cart: {cart.length} {cart.length === 1 ? 'item' : 'items'} • £{total.toFixed(2)}</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Category Tabs */}
                 <div className="mb-8">
                     <div className="flex flex-wrap gap-3 border-b border-gray-200 pb-4">
@@ -130,7 +166,29 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Mobile Cart Summary Bar (sticky at bottom on mobile) */}
+                {cart.length > 0 && (
+                    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-spice-orange shadow-lg z-40">
+                        <div className="max-w-7xl mx-auto px-4 py-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-600">Cart ({cart.length} {cart.length === 1 ? 'item' : 'items'})</p>
+                                    <p className="text-lg font-bold text-spice-maroon">£{total.toFixed(2)}</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        document.getElementById('cart-sidebar')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="bg-spice-orange hover:bg-spice-gold text-white px-6 py-2 rounded-lg font-semibold transition"
+                                >
+                                    View Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20 lg:mb-0">
                     {/* Menu Items */}
                     <div className="lg:col-span-2">
                         {filteredMenuItems && filteredMenuItems.length > 0 ? (
@@ -175,8 +233,15 @@ export default function Menu({ auth, menuItems, cities, flash }) {
 
                     {/* Cart Sidebar */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white rounded-lg shadow-md p-6 border border-spice-orange sticky top-4">
-                            <h2 className="text-2xl font-bold text-spice-maroon mb-4">Cart</h2>
+                        <div id="cart-sidebar" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange sticky top-4 lg:sticky lg:top-4">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-2xl font-bold text-spice-maroon">Cart</h2>
+                                {cart.length > 0 && (
+                                    <span className="bg-spice-orange text-white text-sm font-bold px-3 py-1 rounded-full">
+                                        {cart.length} {cart.length === 1 ? 'item' : 'items'}
+                                    </span>
+                                )}
+                            </div>
                             {cart.length === 0 ? (
                                 <p className="text-gray-500">Your cart is empty</p>
                             ) : (

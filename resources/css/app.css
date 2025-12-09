@@ -17,3 +17,14 @@
     --color-spice-gold: #FFD700;
     --color-spice-cream: #FFF8DC;
 }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
