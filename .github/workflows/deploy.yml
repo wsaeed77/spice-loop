@@ -66,23 +66,28 @@ jobs:
           
           echo "🚀 Starting deployment..."
           
-          # Fix git ownership if needed
+          # Fix git ownership if needed (use local config to avoid permission issues)
           if [ -d .git ]; then
             echo "🔧 Fixing git ownership..."
-            git config --global --add safe.directory $(pwd) || true
+            git config --local --add safe.directory $(pwd) 2>/dev/null || true
           fi
           
           # Check PHP version and use PHP 8.4 if available
           if command -v php8.4 &> /dev/null; then
             PHP_CMD="php8.4"
             echo "✅ Using PHP 8.4"
+            $PHP_CMD -v
           elif php -v | grep -q "8.4"; then
             PHP_CMD="php"
             echo "✅ Using PHP 8.4 (default)"
+            $PHP_CMD -v
           else
-            PHP_CMD="php"
-            echo "⚠️ Warning: PHP 8.4 not found, using default PHP"
-            php -v
+            echo "❌ ERROR: PHP 8.4 is required but not found!"
+            echo "Current PHP version:"
+            php -v || echo "PHP not found"
+            echo ""
+            echo "Please install PHP 8.4 on your server before deploying."
+            exit 1
           fi
           
           # Set COMPOSER_ALLOW_SUPERUSER for root execution
@@ -141,6 +146,34 @@ jobs:
           source: "deployment.tar.gz"
           target: "/tmp/"
           strip_components: 0
+
+      - name: Check PHP version on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST || secrets.SSH_HOSTNAME || secrets.EC2_HOST }}
+          username: ${{ secrets.SSH_USERNAME || secrets.EC2_USER || 'ubuntu' }}
+          key: ${{ secrets.SSH_KEY || secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || secrets.EC2_PORT || 22 }}
+          script: |
+            echo "🔍 Checking PHP version..."
+            if command -v php8.4 &> /dev/null; then
+              php8.4 -v
+              echo "✅ PHP 8.4 is installed"
+            elif php -v | grep -q "8.4"; then
+              php -v
+              echo "✅ PHP 8.4 is the default version"
+            else
+              echo "❌ PHP 8.4 is NOT installed"
+              echo "Current PHP version:"
+              php -v || echo "PHP not found"
+              echo ""
+              echo "⚠️  Please install PHP 8.4 on your EC2 server:"
+              echo "   sudo add-apt-repository -y ppa:ondrej/php"
+              echo "   sudo apt-get update"
+              echo "   sudo apt-get install -y php8.4-fpm php8.4-cli php8.4-common php8.4-mysql php8.4-zip php8.4-gd php8.4-mbstring php8.4-curl php8.4-xml php8.4-bcmath php8.4-intl"
+              echo "   sudo update-alternatives --set php /usr/bin/php8.4"
+              exit 1
+            fi
 
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
