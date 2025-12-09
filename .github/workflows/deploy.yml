@@ -66,30 +66,60 @@ jobs:
           
           echo "🚀 Starting deployment..."
           
+          # Fix git ownership if needed
+          if [ -d .git ]; then
+            echo "🔧 Fixing git ownership..."
+            git config --global --add safe.directory $(pwd) || true
+          fi
+          
+          # Check PHP version and use PHP 8.4 if available
+          if command -v php8.4 &> /dev/null; then
+            PHP_CMD="php8.4"
+            echo "✅ Using PHP 8.4"
+          elif php -v | grep -q "8.4"; then
+            PHP_CMD="php"
+            echo "✅ Using PHP 8.4 (default)"
+          else
+            PHP_CMD="php"
+            echo "⚠️ Warning: PHP 8.4 not found, using default PHP"
+            php -v
+          fi
+          
+          # Set COMPOSER_ALLOW_SUPERUSER for root execution
+          export COMPOSER_ALLOW_SUPERUSER=1
+          
           # Install PHP dependencies
+          echo "📦 Installing PHP dependencies..."
+          $PHP_CMD /usr/local/bin/composer install --optimize-autoloader --no-dev --no-interaction || \
+          $PHP_CMD $(which composer) install --optimize-autoloader --no-dev --no-interaction || \
           composer install --optimize-autoloader --no-dev --no-interaction
           
           # Set permissions
+          echo "🔐 Setting permissions..."
           chown -R www-data:www-data .
           chmod -R 755 .
           chmod -R 775 storage bootstrap/cache
           
           # Create storage link if it doesn't exist
-          php artisan storage:link || true
+          $PHP_CMD artisan storage:link || true
           
           # Run migrations
-          php artisan migrate --force
+          echo "🗄️ Running migrations..."
+          $PHP_CMD artisan migrate --force
           
           # Clear and cache configuration
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
+          echo "⚡ Optimizing application..."
+          $PHP_CMD artisan config:cache
+          $PHP_CMD artisan route:cache
+          $PHP_CMD artisan view:cache
           
           # Restart queue workers
-          supervisorctl restart spice-loop-worker:* || true
+          echo "🔄 Restarting queue workers..."
+          supervisorctl restart spice-loop-worker:* || echo "⚠️ Queue workers not configured"
           
-          # Reload PHP-FPM
-          systemctl reload php8.4-fpm || true
+          # Reload PHP-FPM (try 8.4 first, then fallback)
+          echo "🔄 Reloading PHP-FPM..."
+          systemctl reload php8.4-fpm || systemctl reload php8.2-fpm || echo "⚠️ PHP-FPM reload skipped"
           
           echo "✅ Deployment complete!"
           DEPLOY_SCRIPT
@@ -139,8 +169,11 @@ jobs:
               mv $APP_DIR/.env.backup $APP_DIR/.env
             fi
             
+            # Fix ownership of extracted files
+            sudo chown -R www-data:www-data $APP_DIR
+            
             echo "🔧 Running deployment script..."
-            sudo bash $APP_DIR/deploy.sh
+            sudo -u www-data bash $APP_DIR/deploy.sh || sudo bash $APP_DIR/deploy.sh
             
             echo "🧹 Cleaning up..."
             rm -f /tmp/deployment.tar.gz
