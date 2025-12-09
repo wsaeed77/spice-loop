@@ -112,11 +112,13 @@ This workflow creates a deployment package and transfers it to EC2. Useful if yo
 
 **Step 1: Configure GitHub Secrets**
 
-Add all secrets from Option 1, plus:
+Same secrets as Option 1 (no AWS credentials needed - uses SSH directly):
 
-1. **AWS_ACCESS_KEY_ID** - Your AWS access key
-2. **AWS_SECRET_ACCESS_KEY** - Your AWS secret key
-3. **AWS_REGION** - Your AWS region (e.g., `us-east-1`)
+1. **EC2_HOST** - Your EC2 instance IP or domain
+2. **EC2_USER** - SSH user (usually `ubuntu` or `ec2-user`)
+3. **EC2_SSH_KEY** - Your private SSH key (the entire content of your `.pem` file)
+4. **EC2_PORT** - SSH port (optional, defaults to 22)
+5. **EC2_APP_DIR** - Application directory (optional, defaults to `/var/www/spice-loop`)
 
 **Step 2: Configure Deployment**
 
