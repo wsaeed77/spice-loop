@@ -77,7 +77,7 @@ export default function WeeklyMenuIndex({ auth, weeklyMenu, menuItems, flash }) 
                                     <option value="">Select a menu item</option>
                                     {menuItems.map((item) => (
                                         <option key={item.id} value={item.id}>
-                                            {item.name} - ${item.price}
+                                            {item.name} - £{item.price}
                                         </option>
                                     ))}
                                 </select>

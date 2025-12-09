@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import Layout from '../Components/Layout';
 
-export default function Home({ auth, weeklyCharge, weeklyMenu }) {
+export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems }) {
     const [heroImageError, setHeroImageError] = useState(false);
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dayLabels = {
@@ -51,22 +51,51 @@ export default function Home({ auth, weeklyCharge, weeklyMenu }) {
                 </div>
             </div>
 
-            {/* Weekly Deals Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="bg-spice-orange text-white p-6 rounded-t-lg">
-                    <h2 className="text-3xl font-bold text-center">WEEKLY DEALS</h2>
-                </div>
-                <div className="bg-spice-maroon p-6 rounded-b-lg">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="bg-white rounded-lg p-4 border-2 border-spice-orange">
-                                <div className="h-48 bg-gray-200 rounded mb-4"></div>
-                                <p className="text-center text-gray-600">Food Item {i}</p>
-                            </div>
-                        ))}
+            {/* Chef's Specials / Featured Menu Items Section */}
+            {featuredItems && featuredItems.length > 0 && (
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="bg-spice-orange text-white p-6 rounded-t-lg">
+                        <h2 className="text-3xl font-bold text-center">CHEF'S SPECIALS</h2>
+                        <p className="text-center mt-2 text-spice-cream">Our Most Beloved Dishes</p>
+                    </div>
+                    <div className="bg-spice-maroon p-6 rounded-b-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {featuredItems.map((item) => (
+                                <Link
+                                    key={item.id}
+                                    href="/menu"
+                                    className="bg-white rounded-lg overflow-hidden border-2 border-spice-orange hover:border-spice-gold transition shadow-lg hover:shadow-xl"
+                                >
+                                    {item.image ? (
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-full h-48 object-cover"
+                                            onError={(e) => {
+                                                e.target.src = '/images/placeholder-food.jpg';
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                                            <span className="text-gray-400">No Image</span>
+                                        </div>
+                                    )}
+                                    <div className="p-4">
+                                        <h3 className="text-xl font-bold text-spice-maroon mb-2">{item.name}</h3>
+                                        {item.description && (
+                                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
+                                        )}
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-2xl font-bold text-spice-orange">£{parseFloat(item.price).toFixed(2)}</span>
+                                            <span className="text-sm text-gray-500">{item.category || 'Menu Item'}</span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Weekly Menu Preview */}
             {weeklyMenu && Object.keys(weeklyMenu).length > 0 && (
@@ -86,7 +115,7 @@ export default function Home({ auth, weeklyCharge, weeklyMenu }) {
                     </div>
                     <div className="text-center mt-6">
                         <p className="text-xl font-semibold text-spice-maroon mb-2">
-                            Weekly Subscription: ${weeklyCharge?.toFixed(2) || '50.00'}
+                            Weekly Subscription: £{typeof weeklyCharge === 'number' ? weeklyCharge.toFixed(2) : parseFloat(weeklyCharge || '50.00').toFixed(2)}
                         </p>
                         <Link href="/subscription" className="bg-spice-orange hover:bg-spice-gold text-white px-8 py-3 rounded-lg font-semibold transition inline-block">
                             Subscribe Now

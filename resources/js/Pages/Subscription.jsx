@@ -65,7 +65,7 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
                     <div>
                         <div className="bg-spice-orange text-white p-4 rounded-t-lg">
                             <h2 className="text-2xl font-bold">Subscribe Now</h2>
-                            <p className="text-lg">Weekly Charge: ${weeklyCharge?.toFixed(2) || '50.00'}</p>
+                            <p className="text-lg">Weekly Charge: £{typeof weeklyCharge === 'number' ? weeklyCharge.toFixed(2) : parseFloat(weeklyCharge || '50.00').toFixed(2)}</p>
                         </div>
                         <div className="bg-white rounded-b-lg shadow-md p-6 border border-spice-orange">
                             <form onSubmit={handleSubmit} className="space-y-4">

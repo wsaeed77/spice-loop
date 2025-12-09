@@ -30,7 +30,7 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                 </div>
 
                 {/* Quick Links */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <Link href="/admin/menu" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Manage Menu</h3>
                         <p className="text-gray-600">Add, edit, or remove menu items</p>
@@ -42,6 +42,10 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                     <Link href="/admin/weekly-menu" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Weekly Menu</h3>
                         <p className="text-gray-600">Set weekly subscription menu</p>
+                    </Link>
+                    <Link href="/admin/settings" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
+                        <h3 className="text-xl font-bold text-spice-maroon mb-2">Settings</h3>
+                        <p className="text-gray-600">Configure pricing and contact info</p>
                     </Link>
                 </div>
 
@@ -67,7 +71,7 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                                     <tr key={order.id} className="border-b">
                                         <td className="py-2">#{order.id}</td>
                                         <td className="py-2">{order.customer_name}</td>
-                                        <td className="py-2">${order.total_amount}</td>
+                                        <td className="py-2">£{order.total_amount}</td>
                                         <td className="py-2">
                                             <span className={`px-2 py-1 rounded text-sm ${
                                                 order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :

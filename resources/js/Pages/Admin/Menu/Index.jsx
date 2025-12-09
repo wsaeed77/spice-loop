@@ -65,7 +65,7 @@ export default function MenuIndex({ auth, menuItems, flash }) {
                                                 <span className="text-sm text-gray-900">{item.category || 'Uncategorized'}</span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="text-sm font-semibold text-spice-orange">${parseFloat(item.price).toFixed(2)}</span>
+                                                <span className="text-sm font-semibold text-spice-orange">£{parseFloat(item.price).toFixed(2)}</span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${

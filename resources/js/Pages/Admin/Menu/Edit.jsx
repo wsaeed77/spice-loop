@@ -23,6 +23,7 @@ export default function MenuEdit({ auth, menuItem }) {
         category: '',
         is_available: true,
         is_subscription_item: false,
+        is_featured: false,
     });
 
     // Populate form when menuItem is available
@@ -36,6 +37,7 @@ export default function MenuEdit({ auth, menuItem }) {
             setData('category', menuItem.category || '');
             setData('is_available', menuItem.is_available !== undefined ? Boolean(menuItem.is_available) : true);
             setData('is_subscription_item', menuItem.is_subscription_item !== undefined ? Boolean(menuItem.is_subscription_item) : false);
+            setData('is_featured', menuItem.is_featured !== undefined ? Boolean(menuItem.is_featured) : false);
         }
     }, [menuItem?.id]); // Re-run when menuItem ID changes
 
@@ -109,7 +111,7 @@ export default function MenuEdit({ auth, menuItem }) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Price ($) *
+                                    Price (£) *
                                 </label>
                                 <input
                                     type="number"
@@ -211,6 +213,16 @@ export default function MenuEdit({ auth, menuItem }) {
                                     className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Include in subscription menu</span>
+                            </label>
+
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_featured}
+                                    onChange={(e) => setData('is_featured', e.target.checked)}
+                                    className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Feature on homepage (Chef's Specials)</span>
                             </label>
                         </div>
 

@@ -95,18 +95,18 @@ export default function OrderShow({ auth, order, flash }) {
                                                     {item.menuItem?.name || 'Unknown Item'}
                                                 </p>
                                                 <p className="text-sm text-gray-500">
-                                                    Quantity: {item.quantity} × ${parseFloat(item.price).toFixed(2)}
+                                                    Quantity: {item.quantity} × £{parseFloat(item.price).toFixed(2)}
                                                 </p>
                                             </div>
                                             <p className="font-semibold text-gray-900">
-                                                ${(parseFloat(item.quantity) * parseFloat(item.price)).toFixed(2)}
+                                                £{(parseFloat(item.quantity) * parseFloat(item.price)).toFixed(2)}
                                             </p>
                                         </div>
                                     ))}
                                     <div className="flex justify-between items-center pt-4 border-t-2 border-spice-orange">
                                         <p className="text-xl font-bold text-spice-maroon">Total</p>
                                         <p className="text-xl font-bold text-spice-maroon">
-                                            ${parseFloat(order.total_amount).toFixed(2)}
+                                            £{parseFloat(order.total_amount).toFixed(2)}
                                         </p>
                                     </div>
                                 </div>

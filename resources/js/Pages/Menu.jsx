@@ -76,7 +76,7 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                     <h3 className="text-xl font-bold text-spice-maroon mb-2">{item.name}</h3>
                                     <p className="text-gray-600 mb-4">{item.description}</p>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-2xl font-bold text-spice-orange">${item.price}</span>
+                                        <span className="text-2xl font-bold text-spice-orange">£{item.price}</span>
                                         <button
                                             onClick={() => addToCart(item)}
                                             className="bg-spice-orange hover:bg-spice-gold text-white px-4 py-2 rounded-lg font-semibold transition"
@@ -119,7 +119,7 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                                                    <p className="font-semibold">£{(item.price * item.quantity).toFixed(2)}</p>
                                                     <button
                                                         onClick={() => removeFromCart(item.id)}
                                                         className="text-red-500 text-sm hover:text-red-700"
@@ -133,7 +133,7 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                     <div className="border-t pt-4 mb-4">
                                         <div className="flex justify-between text-xl font-bold text-spice-maroon">
                                             <span>Total:</span>
-                                            <span>${total.toFixed(2)}</span>
+                                            <span>£{total.toFixed(2)}</span>
                                         </div>
                                     </div>
                                     <button

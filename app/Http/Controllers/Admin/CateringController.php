@@ -18,15 +18,32 @@ class CateringController extends Controller
         ]);
     }
 
-    public function show(CateringRequest $cateringRequest)
+    public function show($id)
     {
+        $cateringRequest = CateringRequest::findOrFail($id);
+
         return Inertia::render('Admin/Catering/Show', [
-            'cateringRequest' => $cateringRequest,
+            'cateringRequest' => [
+                'id' => $cateringRequest->id,
+                'name' => $cateringRequest->name,
+                'email' => $cateringRequest->email,
+                'phone' => $cateringRequest->phone,
+                'event_type' => $cateringRequest->event_type,
+                'event_date' => $cateringRequest->event_date,
+                'number_of_guests' => $cateringRequest->number_of_guests,
+                'location' => $cateringRequest->location,
+                'special_requirements' => $cateringRequest->special_requirements,
+                'status' => $cateringRequest->status,
+                'created_at' => $cateringRequest->created_at,
+                'updated_at' => $cateringRequest->updated_at,
+            ],
         ]);
     }
 
-    public function updateStatus(Request $request, CateringRequest $cateringRequest)
+    public function updateStatus(Request $request, $id)
     {
+        $cateringRequest = CateringRequest::findOrFail($id);
+        
         $validated = $request->validate([
             'status' => 'required|in:pending,contacted,confirmed,completed,cancelled',
         ]);

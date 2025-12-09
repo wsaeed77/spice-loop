@@ -42,6 +42,11 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // Check if request is from Inertia
+        if ($request->header('X-Inertia')) {
+            return redirect()->route('home');
+        }
+
         return redirect()->route('home');
     }
 }

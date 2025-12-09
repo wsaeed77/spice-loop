@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CateringController as AdminCateringController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\WeeklyMenuController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CateringController;
@@ -103,8 +104,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Catering Management
     Route::get('/catering', [AdminCateringController::class, 'index'])->name('catering.index');
-    Route::get('/catering/{cateringRequest}', [AdminCateringController::class, 'show'])->name('catering.show');
-    Route::patch('/catering/{cateringRequest}/status', [AdminCateringController::class, 'updateStatus'])->name('catering.update-status');
+    Route::get('/catering/{id}', [AdminCateringController::class, 'show'])->name('catering.show');
+    Route::patch('/catering/{id}/status', [AdminCateringController::class, 'updateStatus'])->name('catering.update-status');
     
     // Cities Management
     Route::get('/cities', [CityController::class, 'index'])->name('cities.index');
@@ -116,4 +117,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/weekly-menu', [WeeklyMenuController::class, 'index'])->name('weekly-menu.index');
     Route::post('/weekly-menu', [WeeklyMenuController::class, 'store'])->name('weekly-menu.store');
     Route::delete('/weekly-menu/{id}', [WeeklyMenuController::class, 'destroy'])->name('weekly-menu.destroy');
+    
+    // Settings Management
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
 });

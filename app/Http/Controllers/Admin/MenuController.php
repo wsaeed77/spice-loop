@@ -65,6 +65,7 @@ class MenuController extends Controller
                 'category' => $menuItem->category,
                 'is_available' => (bool) $menuItem->is_available,
                 'is_subscription_item' => (bool) $menuItem->is_subscription_item,
+                'is_featured' => (bool) $menuItem->is_featured,
             ],
         ]);
     }
@@ -82,6 +83,7 @@ class MenuController extends Controller
             'category' => 'nullable|string|max:255',
             'is_available' => 'boolean',
             'is_subscription_item' => 'boolean',
+            'is_featured' => 'boolean',
         ]);
 
         // Handle file upload

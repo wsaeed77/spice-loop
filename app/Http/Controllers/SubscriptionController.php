@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Models\WeeklyMenuOption;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,7 +11,7 @@ class SubscriptionController extends Controller
 {
     public function index()
     {
-        $weeklyCharge = config('app.weekly_subscription_charge', 50.00);
+        $weeklyCharge = (float) Setting::get('weekly_menu_price', '50.00');
         $weeklyMenu = WeeklyMenuOption::with('menuItem')
             ->where('is_available', true)
             ->get()

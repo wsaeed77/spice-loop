@@ -11,6 +11,7 @@ export default function MenuCreate({ auth }) {
         category: '',
         is_available: true,
         is_subscription_item: false,
+        is_featured: false,
     });
 
     const handleSubmit = (e) => {
@@ -80,7 +81,7 @@ export default function MenuCreate({ auth }) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Price ($) *
+                                    Price (£) *
                                 </label>
                                 <input
                                     type="number"
@@ -169,6 +170,16 @@ export default function MenuCreate({ auth }) {
                                     className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Include in subscription menu</span>
+                            </label>
+
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_featured}
+                                    onChange={(e) => setData('is_featured', e.target.checked)}
+                                    className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Feature on homepage (Chef's Specials)</span>
                             </label>
                         </div>
 
