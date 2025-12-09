@@ -73,7 +73,7 @@ jobs:
             
             # Reload PHP-FPM
             echo "🔄 Reloading PHP-FPM..."
-            sudo systemctl reload php8.2-fpm || true
+            sudo systemctl reload php8.4-fpm || true
             
             echo "✅ Deployment completed successfully!"
 

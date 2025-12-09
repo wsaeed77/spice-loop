@@ -67,7 +67,7 @@ supervisorctl restart spice-loop-worker:* || print_warning "Queue workers not ru
 
 # Reload PHP-FPM
 print_status "Reloading PHP-FPM..."
-systemctl reload php8.2-fpm
+systemctl reload php8.4-fpm
 
 print_status "Update complete!"
 

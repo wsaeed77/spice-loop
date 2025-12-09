@@ -9,7 +9,7 @@ on:
 
 env:
   NODE_VERSION: '18'
-  PHP_VERSION: '8.2'
+  PHP_VERSION: '8.4'
 
 jobs:
   deploy:
@@ -89,7 +89,7 @@ jobs:
           supervisorctl restart spice-loop-worker:* || true
           
           # Reload PHP-FPM
-          systemctl reload php8.2-fpm || true
+          systemctl reload php8.4-fpm || true
           
           echo "✅ Deployment complete!"
           DEPLOY_SCRIPT

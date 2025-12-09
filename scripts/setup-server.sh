@@ -63,22 +63,22 @@ apt-get install -y -qq \
     certbot \
     python3-certbot-nginx
 
-# Install PHP 8.2
-print_status "Installing PHP 8.2 and extensions..."
+# Install PHP 8.4
+print_status "Installing PHP 8.4 and extensions..."
 add-apt-repository -y ppa:ondrej/php
 apt-get update -qq
 apt-get install -y -qq \
-    php8.2-fpm \
-    php8.2-cli \
-    php8.2-common \
-    php8.2-mysql \
-    php8.2-zip \
-    php8.2-gd \
-    php8.2-mbstring \
-    php8.2-curl \
-    php8.2-xml \
-    php8.2-bcmath \
-    php8.2-intl
+    php8.4-fpm \
+    php8.4-cli \
+    php8.4-common \
+    php8.4-mysql \
+    php8.4-zip \
+    php8.4-gd \
+    php8.4-mbstring \
+    php8.4-curl \
+    php8.4-xml \
+    php8.4-bcmath \
+    php8.4-intl
 
 # Install MySQL
 print_status "Installing MySQL..."
