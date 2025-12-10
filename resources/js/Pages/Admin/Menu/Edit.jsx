@@ -24,6 +24,7 @@ export default function MenuEdit({ auth, menuItem }) {
         is_available: true,
         is_subscription_item: false,
         is_featured: false,
+        is_weekend_special: false,
     });
 
     // Populate form when menuItem is available
@@ -38,6 +39,7 @@ export default function MenuEdit({ auth, menuItem }) {
             setData('is_available', menuItem.is_available !== undefined ? Boolean(menuItem.is_available) : true);
             setData('is_subscription_item', menuItem.is_subscription_item !== undefined ? Boolean(menuItem.is_subscription_item) : false);
             setData('is_featured', menuItem.is_featured !== undefined ? Boolean(menuItem.is_featured) : false);
+            setData('is_weekend_special', menuItem.is_weekend_special !== undefined ? Boolean(menuItem.is_weekend_special) : false);
         }
     }, [menuItem?.id]); // Re-run when menuItem ID changes
 
@@ -223,6 +225,16 @@ export default function MenuEdit({ auth, menuItem }) {
                                     className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Feature on homepage (Chef's Specials)</span>
+                            </label>
+
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_weekend_special}
+                                    onChange={(e) => setData('is_weekend_special', e.target.checked)}
+                                    className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Weekend Special (Featured banner)</span>
                             </label>
                         </div>
 

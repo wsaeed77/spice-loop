@@ -24,10 +24,15 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
+        $weekendSpecial = MenuItem::where('is_weekend_special', true)
+            ->where('is_available', true)
+            ->first();
+
         return Inertia::render('Home', [
             'weeklyCharge' => $weeklyCharge,
             'weeklyMenu' => $weeklyMenu,
             'featuredItems' => $featuredItems,
+            'weekendSpecial' => $weekendSpecial,
         ]);
     }
 }

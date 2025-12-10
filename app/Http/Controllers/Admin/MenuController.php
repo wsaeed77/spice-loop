@@ -35,6 +35,8 @@ class MenuController extends Controller
             'category' => 'nullable|string|max:255',
             'is_available' => 'boolean',
             'is_subscription_item' => 'boolean',
+            'is_featured' => 'boolean',
+            'is_weekend_special' => 'boolean',
         ]);
 
         // Handle file upload
@@ -66,6 +68,7 @@ class MenuController extends Controller
                 'is_available' => (bool) $menuItem->is_available,
                 'is_subscription_item' => (bool) $menuItem->is_subscription_item,
                 'is_featured' => (bool) $menuItem->is_featured,
+                'is_weekend_special' => (bool) $menuItem->is_weekend_special,
             ],
         ]);
     }
@@ -84,6 +87,7 @@ class MenuController extends Controller
             'is_available' => 'boolean',
             'is_subscription_item' => 'boolean',
             'is_featured' => 'boolean',
+            'is_weekend_special' => 'boolean',
         ]);
 
         // Handle file upload

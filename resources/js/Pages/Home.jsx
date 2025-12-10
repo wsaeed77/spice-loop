@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import Layout from '../Components/Layout';
 
-export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems }) {
+export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, weekendSpecial }) {
     const [heroImageError, setHeroImageError] = useState(false);
     const [videoError, setVideoError] = useState(false);
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
@@ -108,6 +108,76 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems }) 
                     </div>
                 </div>
             </div>
+
+            {/* Weekend Special Banner */}
+            {weekendSpecial && (
+                <div className="relative bg-gradient-to-r from-spice-orange via-spice-gold to-spice-orange text-white py-12 md:py-16 overflow-hidden">
+                    {/* Decorative background pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute inset-0" style={{
+                            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px)'
+                        }}></div>
+                    </div>
+                    
+                    <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex flex-col md:flex-row items-center gap-8">
+                            {/* Image Section */}
+                            <div className="flex-shrink-0 w-full md:w-1/3">
+                                {weekendSpecial.image ? (
+                                    <div className="relative rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition duration-300">
+                                        <img
+                                            src={weekendSpecial.image}
+                                            alt={weekendSpecial.name}
+                                            className="w-full h-64 md:h-80 object-cover"
+                                            onError={(e) => {
+                                                e.target.src = '/images/placeholder-food.jpg';
+                                            }}
+                                        />
+                                        <div className="absolute top-4 right-4 bg-spice-maroon text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                                            WEEKEND SPECIAL
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="w-full h-64 md:h-80 bg-white/20 rounded-2xl flex items-center justify-center border-4 border-white/30">
+                                        <span className="text-white/70 text-lg">No Image</span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Content Section */}
+                            <div className="flex-1 text-center md:text-left">
+                                <div className="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+                                    <span className="text-sm font-semibold uppercase tracking-wider">This Weekend Only</span>
+                                </div>
+                                <h2 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg">
+                                    {weekendSpecial.name}
+                                </h2>
+                                {weekendSpecial.description && (
+                                    <p className="text-lg md:text-xl mb-6 text-white/90 drop-shadow-md line-clamp-3">
+                                        {weekendSpecial.description}
+                                    </p>
+                                )}
+                                <div className="flex flex-col sm:flex-row items-center md:items-start gap-4">
+                                    <div className="bg-white text-spice-maroon px-6 py-3 rounded-lg font-bold text-2xl shadow-lg">
+                                        £{parseFloat(weekendSpecial.price).toFixed(2)}
+                                    </div>
+                                    <Link 
+                                        href="/menu" 
+                                        className="bg-spice-maroon hover:bg-spice-red text-white px-8 py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    >
+                                        Order Now →
+                                    </Link>
+                                </div>
+                                {weekendSpecial.category && (
+                                    <p className="mt-4 text-white/80 text-sm">
+                                        Category: {weekendSpecial.category}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Chef's Specials / Featured Menu Items Section */}
             {featuredItems && featuredItems.length > 0 && (

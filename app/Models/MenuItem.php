@@ -18,6 +18,7 @@ class MenuItem extends Model
         'is_available',
         'is_subscription_item',
         'is_featured',
+        'is_weekend_special',
     ];
 
     protected $casts = [
@@ -25,6 +26,7 @@ class MenuItem extends Model
         'is_available' => 'boolean',
         'is_subscription_item' => 'boolean',
         'is_featured' => 'boolean',
+        'is_weekend_special' => 'boolean',
     ];
 
     public function orderItems()

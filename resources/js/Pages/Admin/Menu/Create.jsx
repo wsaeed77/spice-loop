@@ -12,6 +12,7 @@ export default function MenuCreate({ auth }) {
         is_available: true,
         is_subscription_item: false,
         is_featured: false,
+        is_weekend_special: false,
     });
 
     const handleSubmit = (e) => {
@@ -180,6 +181,16 @@ export default function MenuCreate({ auth }) {
                                     className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Feature on homepage (Chef's Specials)</span>
+                            </label>
+
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_weekend_special}
+                                    onChange={(e) => setData('is_weekend_special', e.target.checked)}
+                                    className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Weekend Special (Featured banner)</span>
                             </label>
                         </div>
 
