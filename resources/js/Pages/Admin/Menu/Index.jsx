@@ -1,7 +1,22 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { useState, useMemo } from 'react';
 import Layout from '../../../Components/Layout';
 
 export default function MenuIndex({ auth, menuItems, flash }) {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Filter menu items based on search query
+    const filteredMenuItems = useMemo(() => {
+        if (!searchQuery.trim()) {
+            return menuItems || [];
+        }
+        const query = searchQuery.toLowerCase();
+        return (menuItems || []).filter(item => 
+            item.name?.toLowerCase().includes(query) ||
+            item.description?.toLowerCase().includes(query) ||
+            item.category?.toLowerCase().includes(query)
+        );
+    }, [menuItems, searchQuery]);
     const handleDelete = (id, e) => {
         e.preventDefault();
         if (confirm('Are you sure you want to delete this menu item? This action cannot be undone.')) {
@@ -38,6 +53,42 @@ export default function MenuIndex({ auth, menuItems, flash }) {
                     </div>
                 )}
 
+                {/* Search Bar */}
+                <div className="mb-6">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search by name, description, or category..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-spice-orange focus:border-spice-orange"
+                        />
+                        <svg
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                    {searchQuery && (
+                        <p className="mt-2 text-sm text-gray-600">
+                            Found {filteredMenuItems.length} {filteredMenuItems.length === 1 ? 'item' : 'items'}
+                        </p>
+                    )}
+                </div>
+
                 <div className="bg-white rounded-lg shadow-md border border-spice-orange overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full">
@@ -52,8 +103,8 @@ export default function MenuIndex({ auth, menuItems, flash }) {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {menuItems && menuItems.length > 0 ? (
-                                    menuItems.map((item) => (
+                                {filteredMenuItems && filteredMenuItems.length > 0 ? (
+                                    filteredMenuItems.map((item) => (
                                         <tr key={item.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-gray-900">{item.name}</div>
@@ -105,7 +156,15 @@ export default function MenuIndex({ auth, menuItems, flash }) {
                                 ) : (
                                     <tr>
                                         <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                                            No menu items found. <Link href="/admin/menu/create" className="text-spice-orange hover:text-spice-maroon">Create one now</Link>
+                                            {searchQuery ? (
+                                                <>
+                                                    No menu items found matching "{searchQuery}". <button onClick={() => setSearchQuery('')} className="text-spice-orange hover:text-spice-maroon underline">Clear search</button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    No menu items found. <Link href="/admin/menu/create" className="text-spice-orange hover:text-spice-maroon">Create one now</Link>
+                                                </>
+                                            )}
                                         </td>
                                     </tr>
                                 )}

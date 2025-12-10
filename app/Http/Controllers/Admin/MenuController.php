@@ -30,7 +30,6 @@ class MenuController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'image' => 'nullable|string',
             'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'category' => 'nullable|string|max:255',
             'is_available' => 'boolean',
@@ -81,7 +80,6 @@ class MenuController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'image' => 'nullable|string',
             'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'category' => 'nullable|string|max:255',
             'is_available' => 'boolean',
@@ -102,6 +100,7 @@ class MenuController extends Controller
             $imagePath = $request->file('image_file')->store('menu-items', 'public');
             $validated['image'] = Storage::url($imagePath);
         }
+        // If no new file is uploaded, keep the existing image (don't update the image field)
 
         // Remove image_file from validated data as it's not a database field
         unset($validated['image_file']);

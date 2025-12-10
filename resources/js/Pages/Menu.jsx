@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Layout from '../Components/Layout';
 
 export default function Menu({ auth, menuItems, cities, flash }) {
@@ -8,6 +8,7 @@ export default function Menu({ auth, menuItems, cities, flash }) {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [showCartMessage, setShowCartMessage] = useState(false);
     const [addedItemName, setAddedItemName] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     
     // Map database categories to main display categories
     const categoryMapping = {
@@ -38,7 +39,20 @@ export default function Menu({ auth, menuItems, cities, flash }) {
     };
     
     // Get filtered menu items based on selected category
-    const filteredMenuItems = getItemsByMainCategory(selectedCategory);
+    const categoryFilteredItems = getItemsByMainCategory(selectedCategory);
+    
+    // Apply search filter on top of category filter
+    const filteredMenuItems = useMemo(() => {
+        if (!searchQuery.trim()) {
+            return categoryFilteredItems || [];
+        }
+        const query = searchQuery.toLowerCase();
+        return (categoryFilteredItems || []).filter(item => 
+            item.name?.toLowerCase().includes(query) ||
+            item.description?.toLowerCase().includes(query) ||
+            item.category?.toLowerCase().includes(query)
+        );
+    }, [categoryFilteredItems, searchQuery]);
 
     const { data, setData, post, processing, errors } = useForm({
         city_id: '',
@@ -150,6 +164,42 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                     </div>
                 )}
 
+                {/* Search Bar */}
+                <div className="mb-6">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search menu items..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 pl-12 border-2 border-spice-orange rounded-lg focus:ring-2 focus:ring-spice-orange focus:border-spice-orange"
+                        />
+                        <svg
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                    {searchQuery && (
+                        <p className="mt-2 text-sm text-gray-600">
+                            Found {filteredMenuItems.length} {filteredMenuItems.length === 1 ? 'item' : 'items'} matching "{searchQuery}"
+                        </p>
+                    )}
+                </div>
+
                 {/* Category Tabs */}
                 <div className="mb-8">
                     <div className="flex flex-wrap gap-3 border-b border-gray-200 pb-4">
@@ -242,7 +292,13 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                             </div>
                         ) : (
                             <div className="text-center py-12 bg-white rounded-lg border border-spice-orange">
-                                <p className="text-gray-500 text-lg">No items found in this category.</p>
+                                <p className="text-gray-500 text-lg">
+                                    {searchQuery ? (
+                                        <>No items found matching "{searchQuery}". {searchQuery && <button onClick={() => setSearchQuery('')} className="text-spice-orange hover:text-spice-maroon underline ml-1">Clear search</button>}</>
+                                    ) : (
+                                        <>No items found in this category.</>
+                                    )}
+                                </p>
                             </div>
                         )}
                     </div>

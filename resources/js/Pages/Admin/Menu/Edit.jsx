@@ -9,37 +9,33 @@ export default function MenuEdit({ auth, menuItem }) {
         return String(price);
     };
 
-    // Debug: Log menuItem to see what we're receiving
-    useEffect(() => {
-        console.log('menuItem received:', menuItem);
-    }, [menuItem]);
-
-    const { data, setData, put, processing, errors } = useForm({
-        name: '',
-        description: '',
-        price: '',
-        image: '',
+    // Initialize form with menuItem data if available
+    const { data, setData, put, processing, errors, reset } = useForm({
+        name: menuItem?.name || '',
+        description: menuItem?.description || '',
+        price: menuItem?.price ? formatPrice(menuItem.price) : '',
         image_file: null,
-        category: '',
-        is_available: true,
-        is_subscription_item: false,
-        is_featured: false,
-        is_weekend_special: false,
+        category: menuItem?.category || '',
+        is_available: menuItem?.is_available !== undefined ? Boolean(menuItem.is_available) : true,
+        is_subscription_item: menuItem?.is_subscription_item !== undefined ? Boolean(menuItem.is_subscription_item) : false,
+        is_featured: menuItem?.is_featured !== undefined ? Boolean(menuItem.is_featured) : false,
+        is_weekend_special: menuItem?.is_weekend_special !== undefined ? Boolean(menuItem.is_weekend_special) : false,
     });
 
-    // Populate form when menuItem is available
+    // Reset form when menuItem changes (e.g., navigating to different item)
     useEffect(() => {
         if (menuItem) {
-            console.log('Setting form data from menuItem:', menuItem);
-            setData('name', menuItem.name || '');
-            setData('description', menuItem.description || '');
-            setData('price', formatPrice(menuItem.price));
-            setData('image', menuItem.image || '');
-            setData('category', menuItem.category || '');
-            setData('is_available', menuItem.is_available !== undefined ? Boolean(menuItem.is_available) : true);
-            setData('is_subscription_item', menuItem.is_subscription_item !== undefined ? Boolean(menuItem.is_subscription_item) : false);
-            setData('is_featured', menuItem.is_featured !== undefined ? Boolean(menuItem.is_featured) : false);
-            setData('is_weekend_special', menuItem.is_weekend_special !== undefined ? Boolean(menuItem.is_weekend_special) : false);
+            reset({
+                name: menuItem.name || '',
+                description: menuItem.description || '',
+                price: formatPrice(menuItem.price),
+                image_file: null,
+                category: menuItem.category || '',
+                is_available: menuItem.is_available !== undefined ? Boolean(menuItem.is_available) : true,
+                is_subscription_item: menuItem.is_subscription_item !== undefined ? Boolean(menuItem.is_subscription_item) : false,
+                is_featured: menuItem.is_featured !== undefined ? Boolean(menuItem.is_featured) : false,
+                is_weekend_special: menuItem.is_weekend_special !== undefined ? Boolean(menuItem.is_weekend_special) : false,
+            });
         }
     }, [menuItem?.id]); // Re-run when menuItem ID changes
 
@@ -151,11 +147,11 @@ export default function MenuEdit({ auth, menuItem }) {
                             <label htmlFor="image_file" className="block text-sm font-medium text-gray-700 mb-2">
                                 Image
                             </label>
-                            {data.image && !data.image_file && (
+                            {menuItem?.image && !data.image_file && (
                                 <div className="mb-3">
                                     <p className="text-sm text-gray-600 mb-2">Current Image:</p>
                                     <img 
-                                        src={data.image} 
+                                        src={menuItem.image} 
                                         alt="Current menu item" 
                                         className="max-w-xs h-32 object-cover rounded-lg border border-gray-300"
                                         onError={(e) => {
@@ -164,36 +160,27 @@ export default function MenuEdit({ auth, menuItem }) {
                                     />
                                 </div>
                             )}
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-xs text-gray-600 mb-1">Upload New Image File</label>
-                                    <input
-                                        type="file"
-                                        id="image_file"
-                                        accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
-                                        onChange={(e) => setData('image_file', e.target.files[0])}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
-                                    />
-                                    {data.image_file && (
-                                        <p className="text-sm text-gray-600 mt-1">Selected: {data.image_file.name}</p>
-                                    )}
-                                    {errors.image_file && <p className="text-red-500 text-sm mt-1">{errors.image_file}</p>}
-                                </div>
-                                <div className="text-center text-gray-500">OR</div>
-                                <div>
-                                    <label className="block text-xs text-gray-600 mb-1">Or Enter Image URL</label>
-                                    <input
-                                        type="url"
-                                        id="image"
-                                        value={data.image}
-                                        onChange={(e) => setData('image', e.target.value)}
-                                        placeholder="https://example.com/image.jpg"
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
-                                    />
-                                    {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
-                                </div>
+                            <div>
+                                <label className="block text-xs text-gray-600 mb-1">Upload New Image File</label>
+                                <input
+                                    type="file"
+                                    id="image_file"
+                                    accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                                    onChange={(e) => {
+                                        setData('image_file', e.target.files[0]);
+                                        // Clear the image URL when a new file is selected
+                                        if (e.target.files[0]) {
+                                            setData('image', '');
+                                        }
+                                    }}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                />
+                                {data.image_file && (
+                                    <p className="text-sm text-gray-600 mt-2">Selected: {data.image_file.name}</p>
+                                )}
+                                {errors.image_file && <p className="text-red-500 text-sm mt-1">{errors.image_file}</p>}
                             </div>
-                            <p className="text-xs text-gray-500 mt-2">Upload an image file (max 2MB) or provide an image URL. File upload takes priority if both are provided.</p>
+                            <p className="text-xs text-gray-500 mt-2">Upload an image file (max 2MB). Supported formats: JPEG, PNG, JPG, GIF, WebP. Leave empty to keep current image.</p>
                         </div>
 
                         <div className="flex items-center space-x-6">

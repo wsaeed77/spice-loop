@@ -6,7 +6,6 @@ export default function MenuCreate({ auth }) {
         name: '',
         description: '',
         price: '',
-        image: '',
         image_file: null,
         category: '',
         is_available: true,
@@ -120,36 +119,20 @@ export default function MenuCreate({ auth }) {
                             <label htmlFor="image_file" className="block text-sm font-medium text-gray-700 mb-2">
                                 Image
                             </label>
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-xs text-gray-600 mb-1">Upload Image File</label>
-                                    <input
-                                        type="file"
-                                        id="image_file"
-                                        accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
-                                        onChange={(e) => setData('image_file', e.target.files[0])}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
-                                    />
-                                    {data.image_file && (
-                                        <p className="text-sm text-gray-600 mt-1">Selected: {data.image_file.name}</p>
-                                    )}
-                                    {errors.image_file && <p className="text-red-500 text-sm mt-1">{errors.image_file}</p>}
-                                </div>
-                                <div className="text-center text-gray-500">OR</div>
-                                <div>
-                                    <label className="block text-xs text-gray-600 mb-1">Or Enter Image URL</label>
-                                    <input
-                                        type="url"
-                                        id="image"
-                                        value={data.image}
-                                        onChange={(e) => setData('image', e.target.value)}
-                                        placeholder="https://example.com/image.jpg"
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
-                                    />
-                                    {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
-                                </div>
+                            <div>
+                                <input
+                                    type="file"
+                                    id="image_file"
+                                    accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                                    onChange={(e) => setData('image_file', e.target.files[0])}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                />
+                                {data.image_file && (
+                                    <p className="text-sm text-gray-600 mt-2">Selected: {data.image_file.name}</p>
+                                )}
+                                {errors.image_file && <p className="text-red-500 text-sm mt-1">{errors.image_file}</p>}
                             </div>
-                            <p className="text-xs text-gray-500 mt-2">Upload an image file (max 2MB) or provide an image URL. File upload takes priority if both are provided.</p>
+                            <p className="text-xs text-gray-500 mt-2">Upload an image file (max 2MB). Supported formats: JPEG, PNG, JPG, GIF, WebP.</p>
                         </div>
 
                         <div className="flex items-center space-x-6">
