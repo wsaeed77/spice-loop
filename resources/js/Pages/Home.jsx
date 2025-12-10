@@ -109,70 +109,67 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
                 </div>
             </div>
 
-            {/* Weekend Special Banner */}
+            {/* Weekend Special Section */}
             {weekendSpecial && (
-                <div className="relative bg-gradient-to-r from-spice-orange via-spice-gold to-spice-orange text-white py-12 md:py-16 overflow-hidden">
-                    {/* Decorative background pattern */}
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute inset-0" style={{
-                            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px)'
-                        }}></div>
-                    </div>
-                    
-                    <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex flex-col md:flex-row items-center gap-8">
-                            {/* Image Section */}
-                            <div className="flex-shrink-0 w-full md:w-1/3">
-                                {weekendSpecial.image ? (
-                                    <div className="relative rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition duration-300">
-                                        <img
-                                            src={weekendSpecial.image}
-                                            alt={weekendSpecial.name}
-                                            className="w-full h-64 md:h-80 object-cover"
-                                            onError={(e) => {
-                                                e.target.src = '/images/placeholder-food.jpg';
-                                            }}
-                                        />
-                                        <div className="absolute top-4 right-4 bg-spice-maroon text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
-                                            WEEKEND SPECIAL
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-spice-orange transform hover:shadow-3xl transition-shadow duration-300">
+                        {/* Header Badge */}
+                        <div className="bg-gradient-to-r from-spice-orange to-spice-gold text-white py-3 px-6 text-center">
+                            <span className="text-lg font-bold uppercase tracking-wider">🌟 Weekend Special 🌟</span>
+                        </div>
+                        
+                        <div className="p-8 md:p-12">
+                            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+                                {/* Image Section */}
+                                <div className="flex-shrink-0 w-full lg:w-2/5">
+                                    {weekendSpecial.image ? (
+                                        <div className="relative rounded-2xl overflow-hidden shadow-xl">
+                                            <img
+                                                src={weekendSpecial.image}
+                                                alt={weekendSpecial.name}
+                                                className="w-full h-64 md:h-96 object-cover"
+                                                onError={(e) => {
+                                                    e.target.src = '/images/placeholder-food.jpg';
+                                                }}
+                                            />
+                                            <div className="absolute top-4 left-4 bg-spice-maroon text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                                                SPECIAL OFFER
+                                            </div>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="w-full h-64 md:h-80 bg-white/20 rounded-2xl flex items-center justify-center border-4 border-white/30">
-                                        <span className="text-white/70 text-lg">No Image</span>
-                                    </div>
-                                )}
-                            </div>
-                            
-                            {/* Content Section */}
-                            <div className="flex-1 text-center md:text-left">
-                                <div className="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
-                                    <span className="text-sm font-semibold uppercase tracking-wider">This Weekend Only</span>
+                                    ) : (
+                                        <div className="w-full h-64 md:h-96 bg-gradient-to-br from-spice-orange/20 to-spice-gold/20 rounded-2xl flex items-center justify-center border-4 border-spice-orange/30">
+                                            <span className="text-spice-maroon text-lg font-semibold">No Image</span>
+                                        </div>
+                                    )}
                                 </div>
-                                <h2 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg">
-                                    {weekendSpecial.name}
-                                </h2>
-                                {weekendSpecial.description && (
-                                    <p className="text-lg md:text-xl mb-6 text-white/90 drop-shadow-md line-clamp-3">
-                                        {weekendSpecial.description}
-                                    </p>
-                                )}
-                                <div className="flex flex-col sm:flex-row items-center md:items-start gap-4">
-                                    <div className="bg-white text-spice-maroon px-6 py-3 rounded-lg font-bold text-2xl shadow-lg">
-                                        £{parseFloat(weekendSpecial.price).toFixed(2)}
+                                
+                                {/* Content Section */}
+                                <div className="flex-1 text-center lg:text-left">
+                                    <h2 className="text-4xl md:text-5xl font-bold text-spice-maroon mb-4">
+                                        {weekendSpecial.name}
+                                    </h2>
+                                    {weekendSpecial.description && (
+                                        <p className="text-lg md:text-xl text-gray-700 mb-6 leading-relaxed">
+                                            {weekendSpecial.description}
+                                        </p>
+                                    )}
+                                    <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 mb-4">
+                                        <div className="bg-gradient-to-r from-spice-orange to-spice-gold text-white px-8 py-4 rounded-xl font-bold text-3xl shadow-lg">
+                                            £{parseFloat(weekendSpecial.price).toFixed(2)}
+                                        </div>
+                                        <Link 
+                                            href="/menu" 
+                                            className="bg-spice-maroon hover:bg-spice-red text-white px-10 py-4 rounded-xl font-semibold text-lg transition shadow-lg hover:shadow-xl transform hover:scale-105"
+                                        >
+                                            Order Now →
+                                        </Link>
                                     </div>
-                                    <Link 
-                                        href="/menu" 
-                                        className="bg-spice-maroon hover:bg-spice-red text-white px-8 py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-xl transform hover:scale-105"
-                                    >
-                                        Order Now →
-                                    </Link>
+                                    {weekendSpecial.category && (
+                                        <p className="text-gray-600 text-sm font-medium">
+                                            Category: <span className="text-spice-maroon font-semibold">{weekendSpecial.category}</span>
+                                        </p>
+                                    )}
                                 </div>
-                                {weekendSpecial.category && (
-                                    <p className="mt-4 text-white/80 text-sm">
-                                        Category: {weekendSpecial.category}
-                                    </p>
-                                )}
                             </div>
                         </div>
                     </div>
@@ -181,45 +178,49 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
 
             {/* Chef's Specials / Featured Menu Items Section */}
             {featuredItems && featuredItems.length > 0 && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="bg-spice-orange text-white p-6 rounded-t-lg">
-                        <h2 className="text-3xl font-bold text-center">CHEF'S SPECIALS</h2>
-                        <p className="text-center mt-2 text-spice-cream">Our Most Beloved Dishes</p>
+                <div className="w-full">
+                    <div className="bg-spice-orange text-white py-8">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <h2 className="text-3xl font-bold text-center">CHEF'S SPECIALS</h2>
+                            <p className="text-center mt-2 text-spice-cream">Our Most Beloved Dishes</p>
+                        </div>
                     </div>
-                    <div className="bg-spice-maroon p-6 rounded-b-lg">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {featuredItems.map((item) => (
-                                <Link
-                                    key={item.id}
-                                    href="/menu"
-                                    className="bg-white rounded-lg overflow-hidden border-2 border-spice-orange hover:border-spice-gold transition shadow-lg hover:shadow-xl"
-                                >
-                                    {item.image ? (
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="w-full h-48 object-cover"
-                                            onError={(e) => {
-                                                e.target.src = '/images/placeholder-food.jpg';
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                                            <span className="text-gray-400">No Image</span>
-                                        </div>
-                                    )}
-                                    <div className="p-4">
-                                        <h3 className="text-xl font-bold text-spice-maroon mb-2">{item.name}</h3>
-                                        {item.description && (
-                                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
+                    <div className="bg-spice-maroon py-12">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {featuredItems.map((item) => (
+                                    <Link
+                                        key={item.id}
+                                        href="/menu"
+                                        className="bg-white rounded-lg overflow-hidden border-2 border-spice-orange hover:border-spice-gold transition shadow-lg hover:shadow-xl"
+                                    >
+                                        {item.image ? (
+                                            <img
+                                                src={item.image}
+                                                alt={item.name}
+                                                className="w-full h-48 object-cover"
+                                                onError={(e) => {
+                                                    e.target.src = '/images/placeholder-food.jpg';
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                                                <span className="text-gray-400">No Image</span>
+                                            </div>
                                         )}
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-2xl font-bold text-spice-orange">£{parseFloat(item.price).toFixed(2)}</span>
-                                            <span className="text-sm text-gray-500">{item.category || 'Menu Item'}</span>
+                                        <div className="p-4">
+                                            <h3 className="text-xl font-bold text-spice-maroon mb-2">{item.name}</h3>
+                                            {item.description && (
+                                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
+                                            )}
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-2xl font-bold text-spice-orange">£{parseFloat(item.price).toFixed(2)}</span>
+                                                <span className="text-sm text-gray-500">{item.category || 'Menu Item'}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
