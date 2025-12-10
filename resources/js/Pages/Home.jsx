@@ -59,6 +59,14 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
                         "sameAs": []
                     })
                 }} />
+                
+                {/* T2MS Widget Script */}
+                <script
+                    src="https://www.t2ms.biz/widget"
+                    data-client-id="cmj0lbj7r000bsm0fomqj96pw"
+                    data-api="https://www.t2ms.biz"
+                    defer
+                />
             </Head>
             
             {/* Hero Section */}
