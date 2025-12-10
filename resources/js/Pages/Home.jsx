@@ -1,10 +1,32 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '../Components/Layout';
 
 export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, weekendSpecial }) {
     const [heroImageError, setHeroImageError] = useState(false);
     const [videoError, setVideoError] = useState(false);
+    
+    // Load T2MS widget script
+    useEffect(() => {
+        // Check if script already exists
+        const existingScript = document.querySelector('script[data-client-id="cmj0lbj7r000bsm0fomqj96pw"]');
+        
+        if (!existingScript) {
+            const script = document.createElement('script');
+            script.src = 'https://www.t2ms.biz/widget';
+            script.setAttribute('data-client-id', 'cmj0lbj7r000bsm0fomqj96pw');
+            script.setAttribute('data-api', 'https://www.t2ms.biz');
+            script.defer = true;
+            document.head.appendChild(script);
+            
+            // Cleanup function to remove script on unmount (optional)
+            return () => {
+                if (document.head.contains(script)) {
+                    document.head.removeChild(script);
+                }
+            };
+        }
+    }, []);
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dayLabels = {
         monday: 'Monday',
@@ -59,14 +81,6 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
                         "sameAs": []
                     })
                 }} />
-                
-                {/* T2MS Widget Script */}
-                <script
-                    src="https://www.t2ms.biz/widget"
-                    data-client-id="cmj0lbj7r000bsm0fomqj96pw"
-                    data-api="https://www.t2ms.biz"
-                    defer
-                />
             </Head>
             
             {/* Hero Section */}

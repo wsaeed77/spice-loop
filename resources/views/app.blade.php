@@ -35,6 +35,16 @@
         @viteReactRefresh
         @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
         @inertiaHead
+        
+        @if(request()->routeIs('home'))
+        <!-- T2MS Widget Script -->
+        <script
+            src="https://www.t2ms.biz/widget"
+            data-client-id="cmj0lbj7r000bsm0fomqj96pw"
+            data-api="https://www.t2ms.biz"
+            defer
+        ></script>
+        @endif
     </head>
     <body class="font-sans antialiased">
         @inertia
