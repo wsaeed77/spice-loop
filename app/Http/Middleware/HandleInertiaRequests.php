@@ -48,6 +48,8 @@ class HandleInertiaRequests extends Middleware
             'settings' => [
                 'contact_phone' => fn () => Setting::get('contact_phone', ''),
                 'whatsapp_number' => fn () => Setting::get('whatsapp_number', ''),
+                'facebook_url' => fn () => Setting::get('facebook_url', ''),
+                'instagram_url' => fn () => Setting::get('instagram_url', ''),
             ],
         ];
     }

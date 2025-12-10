@@ -15,6 +15,8 @@ class SettingsController extends Controller
             'weekly_menu_price' => Setting::get('weekly_menu_price', '50.00'),
             'contact_phone' => Setting::get('contact_phone', ''),
             'whatsapp_number' => Setting::get('whatsapp_number', ''),
+            'facebook_url' => Setting::get('facebook_url', ''),
+            'instagram_url' => Setting::get('instagram_url', ''),
         ];
 
         return Inertia::render('Admin/Settings/Index', [
@@ -28,11 +30,15 @@ class SettingsController extends Controller
             'weekly_menu_price' => 'required|numeric|min:0',
             'contact_phone' => 'nullable|string|max:255',
             'whatsapp_number' => 'nullable|string|max:255',
+            'facebook_url' => 'nullable|url|max:255',
+            'instagram_url' => 'nullable|url|max:255',
         ]);
 
         Setting::set('weekly_menu_price', $validated['weekly_menu_price']);
         Setting::set('contact_phone', $validated['contact_phone'] ?? '');
         Setting::set('whatsapp_number', $validated['whatsapp_number'] ?? '');
+        Setting::set('facebook_url', $validated['facebook_url'] ?? '');
+        Setting::set('instagram_url', $validated['instagram_url'] ?? '');
 
         return redirect()->route('admin.settings.index')->with('message', 'Settings updated successfully!');
     }

@@ -6,6 +6,8 @@ export default function SettingsIndex({ auth, settings, flash }) {
         weekly_menu_price: settings.weekly_menu_price || '50.00',
         contact_phone: settings.contact_phone || '',
         whatsapp_number: settings.whatsapp_number || '',
+        facebook_url: settings.facebook_url || '',
+        instagram_url: settings.instagram_url || '',
     });
 
     const handleSubmit = (e) => {
@@ -87,6 +89,45 @@ export default function SettingsIndex({ auth, settings, flash }) {
                             />
                             <p className="mt-1 text-sm text-gray-500">Enter your WhatsApp number without country code prefix (e.g., 441234567890). This will be used for the floating WhatsApp chat widget.</p>
                             {errors.whatsapp_number && <p className="text-red-500 text-sm mt-1">{errors.whatsapp_number}</p>}
+                        </div>
+
+                        {/* Social Media Links */}
+                        <div className="border-t border-gray-200 pt-6 mt-6">
+                            <h2 className="text-xl font-semibold text-spice-maroon mb-4">Social Media Links</h2>
+                            
+                            {/* Facebook URL */}
+                            <div className="mb-4">
+                                <label htmlFor="facebook_url" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Facebook Page URL
+                                </label>
+                                <input
+                                    type="url"
+                                    id="facebook_url"
+                                    value={data.facebook_url}
+                                    onChange={(e) => setData('facebook_url', e.target.value)}
+                                    placeholder="https://www.facebook.com/yourpage"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                />
+                                <p className="mt-1 text-sm text-gray-500">Enter your full Facebook page URL. This will be displayed as an icon in the footer.</p>
+                                {errors.facebook_url && <p className="text-red-500 text-sm mt-1">{errors.facebook_url}</p>}
+                            </div>
+
+                            {/* Instagram URL */}
+                            <div>
+                                <label htmlFor="instagram_url" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Instagram Profile URL
+                                </label>
+                                <input
+                                    type="url"
+                                    id="instagram_url"
+                                    value={data.instagram_url}
+                                    onChange={(e) => setData('instagram_url', e.target.value)}
+                                    placeholder="https://www.instagram.com/yourprofile"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                />
+                                <p className="mt-1 text-sm text-gray-500">Enter your full Instagram profile URL. This will be displayed as an icon in the footer.</p>
+                                {errors.instagram_url && <p className="text-red-500 text-sm mt-1">{errors.instagram_url}</p>}
+                            </div>
                         </div>
 
                         <div className="flex justify-end space-x-4 pt-4">
