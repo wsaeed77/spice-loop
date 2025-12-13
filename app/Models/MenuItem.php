@@ -16,6 +16,7 @@ class MenuItem extends Model
         'image',
         'category',
         'is_available',
+        'is_available_today',
         'is_subscription_item',
         'is_featured',
         'is_weekend_special',
@@ -24,6 +25,7 @@ class MenuItem extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'is_available' => 'boolean',
+        'is_available_today' => 'boolean',
         'is_subscription_item' => 'boolean',
         'is_featured' => 'boolean',
         'is_weekend_special' => 'boolean',

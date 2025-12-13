@@ -17,6 +17,7 @@ export default function MenuEdit({ auth, menuItem }) {
         image_file: null,
         category: menuItem?.category || '',
         is_available: menuItem?.is_available !== undefined ? Boolean(menuItem.is_available) : true,
+        is_available_today: menuItem?.is_available_today !== undefined ? Boolean(menuItem.is_available_today) : true,
         is_subscription_item: menuItem?.is_subscription_item !== undefined ? Boolean(menuItem.is_subscription_item) : false,
         is_featured: menuItem?.is_featured !== undefined ? Boolean(menuItem.is_featured) : false,
         is_weekend_special: menuItem?.is_weekend_special !== undefined ? Boolean(menuItem.is_weekend_special) : false,
@@ -32,6 +33,7 @@ export default function MenuEdit({ auth, menuItem }) {
                 image_file: null,
                 category: menuItem.category || '',
                 is_available: menuItem.is_available !== undefined ? Boolean(menuItem.is_available) : true,
+                is_available_today: menuItem.is_available_today !== undefined ? Boolean(menuItem.is_available_today) : true,
                 is_subscription_item: menuItem.is_subscription_item !== undefined ? Boolean(menuItem.is_subscription_item) : false,
                 is_featured: menuItem.is_featured !== undefined ? Boolean(menuItem.is_featured) : false,
                 is_weekend_special: menuItem.is_weekend_special !== undefined ? Boolean(menuItem.is_weekend_special) : false,
@@ -192,6 +194,16 @@ export default function MenuEdit({ auth, menuItem }) {
                                     className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Available for ordering</span>
+                            </label>
+
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_available_today}
+                                    onChange={(e) => setData('is_available_today', e.target.checked)}
+                                    className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Available today</span>
                             </label>
 
                             <label className="flex items-center">

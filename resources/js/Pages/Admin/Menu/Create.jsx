@@ -9,6 +9,7 @@ export default function MenuCreate({ auth }) {
         image_file: null,
         category: '',
         is_available: true,
+        is_available_today: true,
         is_subscription_item: false,
         is_featured: false,
         is_weekend_special: false,
@@ -144,6 +145,16 @@ export default function MenuCreate({ auth }) {
                                     className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Available for ordering</span>
+                            </label>
+
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_available_today}
+                                    onChange={(e) => setData('is_available_today', e.target.checked)}
+                                    className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Available today</span>
                             </label>
 
                             <label className="flex items-center">

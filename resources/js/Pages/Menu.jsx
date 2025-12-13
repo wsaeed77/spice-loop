@@ -259,36 +259,62 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                     <div className="lg:col-span-2">
                         {filteredMenuItems && filteredMenuItems.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {filteredMenuItems.map((item) => (
-                                <div key={item.id} className="bg-white rounded-lg shadow-md p-6 border border-spice-orange">
-                                    <div className="h-48 rounded mb-4 overflow-hidden bg-gray-200 flex items-center justify-center">
-                                        {item.image ? (
-                                            <img 
-                                                src={item.image} 
-                                                alt={item.name}
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                    e.target.style.display = 'none';
-                                                }}
-                                            />
-                                        ) : null}
-                                        {!item.image && (
-                                            <span className="text-gray-400">No Image</span>
+                                {filteredMenuItems.map((item) => {
+                                    const isAvailableToday = item.is_available_today !== false; // Default to true if not set
+                                    return (
+                                    <div 
+                                        key={item.id} 
+                                        className={`bg-white rounded-lg shadow-md p-6 border border-spice-orange relative ${
+                                            !isAvailableToday ? 'opacity-60' : ''
+                                        }`}
+                                    >
+                                        {!isAvailableToday && (
+                                            <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
+                                                Not Available Today
+                                            </div>
                                         )}
+                                        <div className={`h-48 rounded mb-4 overflow-hidden bg-gray-200 flex items-center justify-center ${
+                                            !isAvailableToday ? 'grayscale' : ''
+                                        }`}>
+                                            {item.image ? (
+                                                <img 
+                                                    src={item.image} 
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                    }}
+                                                />
+                                            ) : null}
+                                            {!item.image && (
+                                                <span className="text-gray-400">No Image</span>
+                                            )}
+                                        </div>
+                                        <h3 className={`text-xl font-bold mb-2 ${
+                                            !isAvailableToday ? 'text-gray-500' : 'text-spice-maroon'
+                                        }`}>{item.name}</h3>
+                                        <p className={`mb-4 ${
+                                            !isAvailableToday ? 'text-gray-400' : 'text-gray-600'
+                                        }`}>{item.description}</p>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`text-2xl font-bold ${
+                                                !isAvailableToday ? 'text-gray-400' : 'text-spice-orange'
+                                            }`}>£{item.price}</span>
+                                            <button
+                                                onClick={() => addToCart(item)}
+                                                disabled={!isAvailableToday}
+                                                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                                    !isAvailableToday
+                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                        : 'bg-spice-orange hover:bg-spice-gold text-white'
+                                                }`}
+                                            >
+                                                {isAvailableToday ? 'Add to Cart' : 'Not Available'}
+                                            </button>
+                                        </div>
                                     </div>
-                                    <h3 className="text-xl font-bold text-spice-maroon mb-2">{item.name}</h3>
-                                    <p className="text-gray-600 mb-4">{item.description}</p>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-2xl font-bold text-spice-orange">£{item.price}</span>
-                                        <button
-                                            onClick={() => addToCart(item)}
-                                            className="bg-spice-orange hover:bg-spice-gold text-white px-4 py-2 rounded-lg font-semibold transition"
-                                        >
-                                            Add to Cart
-                                        </button>
-                                    </div>
-                                </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="text-center py-12 bg-white rounded-lg border border-spice-orange">
