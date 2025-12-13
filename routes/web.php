@@ -6,8 +6,10 @@ use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SpecialOrderController as AdminSpecialOrderController;
 use App\Http\Controllers\Admin\SubscriptionRequestController;
 use App\Http\Controllers\Admin\WeeklyMenuController;
+use App\Http\Controllers\SpecialOrderController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CateringController;
 use App\Http\Controllers\HomeController;
@@ -75,6 +77,7 @@ Route::get('/seed-menu', function () {
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+Route::post('/special-orders', [SpecialOrderController::class, 'store'])->name('special-orders.store');
 Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription');
 Route::post('/subscription', [SubscriptionController::class, 'store'])->name('subscription.store');
 Route::get('/catering', [CateringController::class, 'index'])->name('catering');
@@ -122,6 +125,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Settings Management
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    
+    // Special Orders Management
+    Route::get('/special-orders', [AdminSpecialOrderController::class, 'index'])->name('special-orders.index');
+    Route::get('/special-orders/{id}', [AdminSpecialOrderController::class, 'show'])->name('special-orders.show');
+    Route::patch('/special-orders/{id}/status', [AdminSpecialOrderController::class, 'updateStatus'])->name('special-orders.update-status');
     
     // Subscription Requests Management
     Route::get('/subscription-requests', [SubscriptionRequestController::class, 'index'])->name('subscription-requests.index');

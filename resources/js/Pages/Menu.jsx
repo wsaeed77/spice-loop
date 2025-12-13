@@ -9,6 +9,8 @@ export default function Menu({ auth, menuItems, cities, flash }) {
     const [showCartMessage, setShowCartMessage] = useState(false);
     const [addedItemName, setAddedItemName] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [showSpecialOrderModal, setShowSpecialOrderModal] = useState(false);
+    const [selectedSpecialOrderItem, setSelectedSpecialOrderItem] = useState(null);
     
     // Map database categories to main display categories
     const categoryMapping = {
@@ -103,6 +105,37 @@ export default function Menu({ auth, menuItems, cities, flash }) {
     };
 
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    const openSpecialOrderModal = (item) => {
+        setSelectedSpecialOrderItem(item);
+        setSpecialOrderData('menu_item_id', item.id);
+        setShowSpecialOrderModal(true);
+    };
+
+    const closeSpecialOrderModal = () => {
+        setShowSpecialOrderModal(false);
+        setSelectedSpecialOrderItem(null);
+        resetSpecialOrder();
+    };
+
+    const { data: specialOrderData, setData: setSpecialOrderData, post: postSpecialOrder, processing: processingSpecialOrder, errors: specialOrderErrors, reset: resetSpecialOrder } = useForm({
+        menu_item_id: '',
+        customer_name: '',
+        customer_email: '',
+        customer_phone: '',
+        customer_address: '',
+        special_instructions: '',
+        quantity: 1,
+    });
+
+    const handleSpecialOrderSubmit = (e) => {
+        e.preventDefault();
+        postSpecialOrder('/special-orders', {
+            onSuccess: () => {
+                closeSpecialOrderModal();
+            },
+        });
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -296,21 +329,37 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                         <p className={`mb-4 ${
                                             !isAvailableToday ? 'text-gray-400' : 'text-gray-600'
                                         }`}>{item.description}</p>
-                                        <div className="flex justify-between items-center">
-                                            <span className={`text-2xl font-bold ${
-                                                !isAvailableToday ? 'text-gray-400' : 'text-spice-orange'
-                                            }`}>£{item.price}</span>
-                                            <button
-                                                onClick={() => addToCart(item)}
-                                                disabled={!isAvailableToday}
-                                                className={`px-4 py-2 rounded-lg font-semibold transition ${
-                                                    !isAvailableToday
-                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                        : 'bg-spice-orange hover:bg-spice-gold text-white'
-                                                }`}
-                                            >
-                                                {isAvailableToday ? 'Add to Cart' : 'Not Available'}
-                                            </button>
+                                        <div className="flex flex-col gap-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className={`text-2xl font-bold ${
+                                                    !isAvailableToday ? 'text-gray-400' : 'text-spice-orange'
+                                                }`}>£{item.price}</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {isAvailableToday ? (
+                                                    <button
+                                                        onClick={() => addToCart(item)}
+                                                        className="flex-1 bg-spice-orange hover:bg-spice-gold text-white px-4 py-2 rounded-lg font-semibold transition"
+                                                    >
+                                                        Add to Cart
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={() => openSpecialOrderModal(item)}
+                                                            className="flex-1 bg-spice-maroon hover:bg-spice-red text-white px-4 py-2 rounded-lg font-semibold transition"
+                                                        >
+                                                            Special Order
+                                                        </button>
+                                                        <button
+                                                            disabled
+                                                            className="flex-1 bg-gray-300 text-gray-500 px-4 py-2 rounded-lg font-semibold cursor-not-allowed"
+                                                        >
+                                                            Not Available
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                     );
@@ -481,6 +530,144 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                         className="px-6 py-2 bg-spice-orange hover:bg-spice-gold text-white rounded-lg font-semibold"
                                     >
                                         {processing ? 'Processing...' : 'Place Order'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Special Order Modal */}
+                {showSpecialOrderModal && selectedSpecialOrderItem && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-spice-maroon">Special Order Request</h2>
+                                <button
+                                    onClick={closeSpecialOrderModal}
+                                    className="text-gray-500 hover:text-gray-700"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div className="flex items-start">
+                                    <svg className="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <div>
+                                        <p className="text-sm font-semibold text-yellow-800 mb-1">Please Note:</p>
+                                        <p className="text-sm text-yellow-700">
+                                            This item is not available today. Special orders require additional preparation time. 
+                                            We will contact you to confirm availability and estimated delivery time. 
+                                            Thank you for your patience!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                                <h3 className="font-semibold text-spice-maroon mb-2">Item Details:</h3>
+                                <p className="text-lg font-bold">{selectedSpecialOrderItem.name}</p>
+                                <p className="text-gray-600 text-sm mt-1">{selectedSpecialOrderItem.description}</p>
+                                <p className="text-spice-orange font-bold mt-2">£{selectedSpecialOrderItem.price}</p>
+                            </div>
+
+                            <form onSubmit={handleSpecialOrderSubmit}>
+                                <input type="hidden" value={specialOrderData.menu_item_id} readOnly />
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="100"
+                                            value={specialOrderData.quantity}
+                                            onChange={(e) => setSpecialOrderData('quantity', parseInt(e.target.value))}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                            required
+                                        />
+                                        {specialOrderErrors.quantity && <p className="text-red-500 text-sm mt-1">{specialOrderErrors.quantity}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
+                                        <input
+                                            type="text"
+                                            value={specialOrderData.customer_name}
+                                            onChange={(e) => setSpecialOrderData('customer_name', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                            required
+                                        />
+                                        {specialOrderErrors.customer_name && <p className="text-red-500 text-sm mt-1">{specialOrderErrors.customer_name}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                        <input
+                                            type="email"
+                                            value={specialOrderData.customer_email}
+                                            onChange={(e) => setSpecialOrderData('customer_email', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                            required
+                                        />
+                                        {specialOrderErrors.customer_email && <p className="text-red-500 text-sm mt-1">{specialOrderErrors.customer_email}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                                        <input
+                                            type="tel"
+                                            value={specialOrderData.customer_phone}
+                                            onChange={(e) => setSpecialOrderData('customer_phone', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                            required
+                                        />
+                                        {specialOrderErrors.customer_phone && <p className="text-red-500 text-sm mt-1">{specialOrderErrors.customer_phone}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                                        <textarea
+                                            value={specialOrderData.customer_address}
+                                            onChange={(e) => setSpecialOrderData('customer_address', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                            rows="3"
+                                        />
+                                        {specialOrderErrors.customer_address && <p className="text-red-500 text-sm mt-1">{specialOrderErrors.customer_address}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Special Instructions</label>
+                                        <textarea
+                                            value={specialOrderData.special_instructions}
+                                            onChange={(e) => setSpecialOrderData('special_instructions', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                            rows="3"
+                                            placeholder="Any special requests or dietary requirements..."
+                                        />
+                                        {specialOrderErrors.special_instructions && <p className="text-red-500 text-sm mt-1">{specialOrderErrors.special_instructions}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end space-x-4 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={closeSpecialOrderModal}
+                                        className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={processingSpecialOrder}
+                                        className="px-6 py-2 bg-spice-maroon hover:bg-spice-red text-white rounded-lg font-semibold disabled:opacity-50"
+                                    >
+                                        {processingSpecialOrder ? 'Submitting...' : 'Submit Special Order'}
                                     </button>
                                 </div>
                             </form>
