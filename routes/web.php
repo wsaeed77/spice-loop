@@ -97,6 +97,7 @@ Route::middleware(['auth'])->group(function () {
 // Admin Routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/qr-code', [AdminController::class, 'qrCode'])->name('qr-code');
     
     // Menu Management
     Route::resource('menu', AdminMenuController::class);

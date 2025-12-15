@@ -53,6 +53,25 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                     </Link>
                 </div>
 
+                {/* QR Code Section */}
+                <div className="bg-white rounded-lg shadow-md p-6 border border-spice-orange mb-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-2xl font-bold text-spice-maroon mb-2">Website QR Code</h2>
+                            <p className="text-gray-600">Generate and download QR code for www.spiceloop.com</p>
+                        </div>
+                        <Link 
+                            href="/admin/qr-code" 
+                            className="bg-spice-orange hover:bg-spice-gold text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                            </svg>
+                            View QR Code
+                        </Link>
+                    </div>
+                </div>
+
                 {/* Recent Orders */}
                 <div className="bg-white rounded-lg shadow-md p-6 border border-spice-orange mb-8">
                     <div className="flex justify-between items-center mb-4">

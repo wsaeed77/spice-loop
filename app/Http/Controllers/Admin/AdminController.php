@@ -42,4 +42,11 @@ class AdminController extends Controller
             'recentSubscriptionRequests' => $recentSubscriptionRequests,
         ]);
     }
+
+    public function qrCode()
+    {
+        return Inertia::render('Admin/QRCode', [
+            'websiteUrl' => 'https://www.spiceloop.com',
+        ]);
+    }
 }
