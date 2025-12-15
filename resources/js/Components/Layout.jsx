@@ -13,30 +13,48 @@ const formatUKPhone = (phone) => {
         digits = digits.substring(2);
     }
     
-    // If starts with 0, remove it
+    // If starts with 0, remove it (UK national format)
     if (digits.startsWith('0')) {
         digits = digits.substring(1);
     }
     
-    // Format based on length
+    // Format based on UK phone number patterns (10 digits after removing country code and leading 0)
     if (digits.length === 10) {
-        // Mobile or landline: 07857 110325 or 020 1234 5678
-        if (digits.startsWith('07')) {
-            // Mobile: 07857 110325
+        // Mobile numbers: 7XXX XXXXXX
+        if (digits.startsWith('7')) {
             return `+44 ${digits.substring(0, 4)} ${digits.substring(4)}`;
-        } else if (digits.startsWith('02')) {
-            // London/Area code starting with 02: 020 1234 5678
-            return `+44 ${digits.substring(0, 3)} ${digits.substring(3, 7)} ${digits.substring(7)}`;
-        } else {
-            // Other landline: 0123 456 7890
+        }
+        // London numbers: 20 XXXX XXXX
+        else if (digits.startsWith('20')) {
+            return `+44 ${digits.substring(0, 2)} ${digits.substring(2, 6)} ${digits.substring(6)}`;
+        }
+        // Area codes starting with 1: 1XXX XXX XXX or 1XX XXX XXXX
+        else if (digits.startsWith('1')) {
+            // 3-digit area codes (e.g., 113, 114, 115, 116, 117, 118, 121, 131, 141, 151, 161, 171, 181, 191)
+            if (digits.substring(0, 3).match(/^(11[3-8]|12[01]|13[01]|14[01]|15[01]|16[01]|17[01]|18[01]|19[01])$/)) {
+                return `+44 ${digits.substring(0, 3)} ${digits.substring(3, 6)} ${digits.substring(6)}`;
+            }
+            // 4-digit area codes (e.g., 1200, 1202, 1204, etc.)
+            else {
+                return `+44 ${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7)}`;
+            }
+        }
+        // Other area codes: 2XXX XXX XXX (non-London)
+        else if (digits.startsWith('2')) {
+            return `+44 ${digits.substring(0, 3)} ${digits.substring(3, 6)} ${digits.substring(6)}`;
+        }
+        // Default format for 10 digits
+        else {
             return `+44 ${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7)}`;
         }
-    } else if (digits.length === 11 && digits.startsWith('0')) {
-        // 11 digits starting with 0: 01234 567890
-        return `+44 ${digits.substring(1, 5)} ${digits.substring(5)}`;
     }
     
-    // Fallback: return as is if format doesn't match
+    // Fallback: return formatted with +44 prefix if we have at least 10 digits
+    if (digits.length >= 10) {
+        return `+44 ${digits.substring(0, 4)} ${digits.substring(4)}`;
+    }
+    
+    // Final fallback: return as is if format doesn't match
     return phone;
 };
 
