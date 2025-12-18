@@ -5,8 +5,13 @@ import Layout from '../../Components/Layout';
 export default function QRCode({ auth, websiteUrl }) {
     const [copied, setCopied] = useState(false);
     
-    // Generate QR code URL using a free QR code API
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(websiteUrl)}`;
+    // Generate modern styled QR code with custom colors matching SpiceLoop funky brand
+    // Using QR Server API with modern styling: vibrant tangerine orange (#F77F00), white background, larger size, better margins
+    // Size: 600x600 for high quality, color: tangerine orange (#F77F00), margin: 2, quiet zone: 3 for better scanning
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(websiteUrl)}&color=F77F00&bgcolor=FFFFFF&margin=2&qzone=3&format=png&ecc=M`;
+    
+    // Alternative modern QR code with gradient effect (using different API if needed)
+    // For now using the above with CSS enhancements for modern look
     
     const copyToClipboard = () => {
         navigator.clipboard.writeText(websiteUrl).then(() => {
@@ -47,12 +52,38 @@ export default function QRCode({ auth, websiteUrl }) {
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
                         {/* QR Code Display */}
                         <div className="flex-shrink-0">
-                            <div className="bg-white p-4 rounded-lg border-2 border-gray-200 shadow-md">
-                                <img 
-                                    src={qrCodeUrl} 
-                                    alt="QR Code for SpiceLoop Website" 
-                                    className="w-64 h-64"
-                                />
+                            <div className="relative bg-gradient-to-br from-white to-spice-cream p-6 rounded-2xl border-2 border-spice-orange shadow-xl transform hover:scale-105 transition-transform duration-300">
+                                {/* Decorative corner elements */}
+                                <div className="absolute top-2 left-2 w-8 h-8 border-t-2 border-l-2 border-spice-maroon rounded-tl-lg"></div>
+                                <div className="absolute top-2 right-2 w-8 h-8 border-t-2 border-r-2 border-spice-orange rounded-tr-lg"></div>
+                                <div className="absolute bottom-2 left-2 w-8 h-8 border-b-2 border-l-2 border-spice-orange rounded-bl-lg"></div>
+                                <div className="absolute bottom-2 right-2 w-8 h-8 border-b-2 border-r-2 border-spice-maroon rounded-br-lg"></div>
+                                
+                                <div className="bg-white p-4 rounded-xl shadow-inner relative overflow-hidden">
+                                    {/* Modern QR code with rounded corners effect */}
+                                    <div className="relative">
+                                        <img 
+                                            src={qrCodeUrl} 
+                                            alt="QR Code for SpiceLoop Website" 
+                                            className="w-72 h-72 rounded-2xl"
+                                            style={{
+                                                filter: 'drop-shadow(0 8px 16px rgba(139, 0, 0, 0.15))',
+                                                imageRendering: 'crisp-edges',
+                                            }}
+                                        />
+                                        {/* Overlay gradient for modern look */}
+                                        <div className="absolute inset-0 rounded-2xl pointer-events-none" 
+                                            style={{
+                                                background: 'linear-gradient(135deg, rgba(139, 0, 0, 0.03) 0%, rgba(255, 255, 255, 0) 100%)',
+                                            }}
+                                        ></div>
+                                    </div>
+                                </div>
+                                
+                                {/* Brand label */}
+                                <div className="mt-4 text-center">
+                                    <p className="text-sm font-semibold text-spice-maroon">www.spiceloop.com</p>
+                                </div>
                             </div>
                         </div>
 

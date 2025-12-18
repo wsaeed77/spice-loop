@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CateringController as AdminCateringController;
 use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\CostCalculatorController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -126,6 +127,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Settings Management
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    
+    // Cost Calculator
+    Route::get('/cost-calculator', [CostCalculatorController::class, 'index'])->name('cost-calculator.index');
     
     // Special Orders Management
     Route::get('/special-orders', [AdminSpecialOrderController::class, 'index'])->name('special-orders.index');

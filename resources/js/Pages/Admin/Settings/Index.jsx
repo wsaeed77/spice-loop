@@ -4,6 +4,7 @@ import Layout from '../../../Components/Layout';
 export default function SettingsIndex({ auth, settings, flash }) {
     const { data, setData, put, processing, errors } = useForm({
         weekly_menu_price: settings.weekly_menu_price || '50.00',
+        delivery_cost: settings.delivery_cost || '0.00',
         contact_phone: settings.contact_phone || '',
         whatsapp_number: settings.whatsapp_number || '',
         facebook_url: settings.facebook_url || '',
@@ -55,6 +56,25 @@ export default function SettingsIndex({ auth, settings, flash }) {
                             />
                             <p className="mt-1 text-sm text-gray-500">This price will be shown on the subscription page and homepage.</p>
                             {errors.weekly_menu_price && <p className="text-red-500 text-sm mt-1">{errors.weekly_menu_price}</p>}
+                        </div>
+
+                        {/* Delivery Cost */}
+                        <div>
+                            <label htmlFor="delivery_cost" className="block text-sm font-medium text-gray-700 mb-2">
+                                Delivery Cost (£)
+                            </label>
+                            <input
+                                type="number"
+                                id="delivery_cost"
+                                step="0.01"
+                                min="0"
+                                value={data.delivery_cost}
+                                onChange={(e) => setData('delivery_cost', e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                required
+                            />
+                            <p className="mt-1 text-sm text-gray-500">Fixed delivery cost used in the cost calculator. This will be automatically included when calculating menu item costs.</p>
+                            {errors.delivery_cost && <p className="text-red-500 text-sm mt-1">{errors.delivery_cost}</p>}
                         </div>
 
                         {/* Contact Phone */}
