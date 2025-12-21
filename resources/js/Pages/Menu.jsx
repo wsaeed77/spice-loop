@@ -5,43 +5,30 @@ import Layout from '../Components/Layout';
 export default function Menu({ auth, menuItems, cities, flash }) {
     const [cart, setCart] = useState([]);
     const [showCheckout, setShowCheckout] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedCategory, setSelectedCategory] = useState('South Asian Cuisine');
     const [showCartMessage, setShowCartMessage] = useState(false);
     const [addedItemName, setAddedItemName] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [showSpecialOrderModal, setShowSpecialOrderModal] = useState(false);
     const [selectedSpecialOrderItem, setSelectedSpecialOrderItem] = useState(null);
+    const [showVariantModal, setShowVariantModal] = useState(false);
+    const [selectedItemForVariant, setSelectedItemForVariant] = useState(null);
     
-    // Map database categories to main display categories
-    const categoryMapping = {
-        // Main Course categories
-        'Curries': 'Main Course',
-        'Rice Dishes': 'Main Course',
-        'Biryani': 'Main Course',
-        'Vegetarian': 'Main Course',
-        'Non-Vegetarian': 'Main Course',
-        // Sides categories
-        'Breads': 'Sides',
-        'Appetizers': 'Sides',
-        'Sides': 'Sides',
-        // Sweet categories
-        'Desserts': 'Sweet',
-    };
+    // Main category tabs - these match the type options
+    const mainCategories = ['South Asian Cuisine', 'Fast Food', 'Sides & Drinks', 'Dessert'];
     
-    // Main category tabs
-    const mainCategories = ['all', 'Main Course', 'Sides', 'Sweet'];
-    
-    // Filter items by main category
+    // Filter items by type (which determines the tab)
     const getItemsByMainCategory = (mainCategory) => {
-        if (mainCategory === 'all') return menuItems;
         return menuItems?.filter(item => {
-            const itemMainCategory = categoryMapping[item.category] || item.category;
-            return itemMainCategory === mainCategory;
+            // Use type to determine which tab the item belongs to
+            return item.type === mainCategory;
         });
     };
     
     // Get filtered menu items based on selected category
-    const categoryFilteredItems = getItemsByMainCategory(selectedCategory);
+    // Default to first category if none selected
+    const activeCategory = selectedCategory || mainCategories[0];
+    const categoryFilteredItems = getItemsByMainCategory(activeCategory);
     
     // Apply search filter on top of category filter
     const filteredMenuItems = useMemo(() => {
@@ -62,20 +49,54 @@ export default function Menu({ auth, menuItems, cities, flash }) {
         customer_email: '',
         customer_phone: '',
         customer_address: '',
+        customer_postcode: '',
+        allergies: '',
         items: [],
         notes: '',
     });
 
-    const addToCart = (item) => {
-        const existingItem = cart.find(c => c.id === item.id);
-        if (existingItem) {
-            setCart(cart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c));
+    const addToCart = (item, selectedOption = null) => {
+        // If item has options and no option is selected, show variant modal
+        if (item.options && item.options.length > 0 && !selectedOption) {
+            setSelectedItemForVariant(item);
+            setShowVariantModal(true);
+            return;
+        }
+
+        // Prepare cart item with variant info
+        const cartItem = {
+            ...item,
+            quantity: 1,
+            selectedOption: selectedOption || null,
+            // Use variant price if option is selected, otherwise use item price
+            price: selectedOption ? parseFloat(selectedOption.price) : parseFloat(item.price),
+        };
+
+        // Check if same item with same variant already exists in cart
+        const existingItemIndex = cart.findIndex(c => {
+            if (c.id !== item.id) return false;
+            
+            const cOptionId = c.selectedOption?.id || null;
+            const newOptionId = selectedOption?.id || null;
+            
+            return cOptionId === newOptionId;
+        });
+
+        if (existingItemIndex !== -1) {
+            // Update quantity of existing item
+            setCart(cart.map((c, index) => 
+                index === existingItemIndex
+                    ? { ...c, quantity: c.quantity + 1 }
+                    : c
+            ));
         } else {
-            setCart([...cart, { ...item, quantity: 1 }]);
+            // Add new item to cart
+            setCart([...cart, cartItem]);
         }
         
         // Show success message
-        setAddedItemName(item.name);
+        const displayName = selectedOption ? `${item.name} (${selectedOption.name})` : item.name;
+        setAddedItemName(displayName);
         setShowCartMessage(true);
         
         // Scroll cart into view on mobile after a short delay
@@ -90,21 +111,34 @@ export default function Menu({ auth, menuItems, cities, flash }) {
         setTimeout(() => {
             setShowCartMessage(false);
         }, 3000);
-    };
 
-    const removeFromCart = (itemId) => {
-        setCart(cart.filter(c => c.id !== itemId));
-    };
-
-    const updateQuantity = (itemId, quantity) => {
-        if (quantity <= 0) {
-            removeFromCart(itemId);
-        } else {
-            setCart(cart.map(c => c.id === itemId ? { ...c, quantity } : c));
+        // Close variant modal if it was open
+        if (showVariantModal) {
+            setShowVariantModal(false);
+            setSelectedItemForVariant(null);
         }
     };
 
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const handleVariantSelect = (item, option) => {
+        addToCart(item, option);
+    };
+
+    const removeFromCart = (cartIndex) => {
+        setCart(cart.filter((_, index) => index !== cartIndex));
+    };
+
+    const updateQuantity = (cartIndex, quantity) => {
+        if (quantity <= 0) {
+            removeFromCart(cartIndex);
+        } else {
+            setCart(cart.map((c, index) => index === cartIndex ? { ...c, quantity } : c));
+        }
+    };
+
+    const total = cart.reduce((sum, item) => {
+        const itemPrice = item.price || parseFloat(item.price);
+        return sum + (itemPrice * item.quantity);
+    }, 0);
 
     const openSpecialOrderModal = (item) => {
         setSelectedSpecialOrderItem(item);
@@ -142,6 +176,7 @@ export default function Menu({ auth, menuItems, cities, flash }) {
         setData('items', cart.map(item => ({
             menu_item_id: item.id,
             quantity: item.quantity,
+            menu_item_option_id: item.selectedOption?.id || null,
         })));
         post('/orders', {
             onSuccess: () => {
@@ -239,7 +274,6 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                         {mainCategories.map((mainCategory) => {
                             const itemsInCategory = getItemsByMainCategory(mainCategory);
                             const isActive = selectedCategory === mainCategory;
-                            const displayName = mainCategory === 'all' ? 'All Items' : mainCategory;
                             
                             return (
                                 <button
@@ -251,7 +285,7 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                                 >
-                                    {displayName}
+                                    {mainCategory}
                                     {itemsInCategory && itemsInCategory.length > 0 && (
                                         <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
                                             isActive ? 'bg-white text-spice-orange' : 'bg-spice-orange text-white'
@@ -394,37 +428,44 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                             ) : (
                                 <>
                                     <div className="space-y-4 mb-4">
-                                        {cart.map((item) => (
-                                            <div key={item.id} className="flex justify-between items-center border-b pb-2">
-                                                <div>
-                                                    <p className="font-semibold">{item.name}</p>
-                                                    <div className="flex items-center space-x-2 mt-1">
+                                        {cart.map((item, index) => {
+                                            const itemPrice = item.price || parseFloat(item.price);
+                                            const cartItemKey = `${item.id}-${item.selectedOption?.id || 'default'}-${index}`;
+                                            return (
+                                                <div key={cartItemKey} className="flex justify-between items-center border-b pb-2">
+                                                    <div>
+                                                        <p className="font-semibold">{item.name}</p>
+                                                        {item.selectedOption && (
+                                                            <p className="text-sm text-gray-600">Variant: {item.selectedOption.name}</p>
+                                                        )}
+                                                        <div className="flex items-center space-x-2 mt-1">
+                                                            <button
+                                                                onClick={() => updateQuantity(index, item.quantity - 1)}
+                                                                className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
+                                                            >
+                                                                -
+                                                            </button>
+                                                            <span>{item.quantity}</span>
+                                                            <button
+                                                                onClick={() => updateQuantity(index, item.quantity + 1)}
+                                                                className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
+                                                            >
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="font-semibold">£{(itemPrice * item.quantity).toFixed(2)}</p>
                                                         <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                            className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
+                                                            onClick={() => removeFromCart(index)}
+                                                            className="text-red-500 text-sm hover:text-red-700"
                                                         >
-                                                            -
-                                                        </button>
-                                                        <span>{item.quantity}</span>
-                                                        <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                            className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
-                                                        >
-                                                            +
+                                                            Remove
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className="font-semibold">£{(item.price * item.quantity).toFixed(2)}</p>
-                                                    <button
-                                                        onClick={() => removeFromCart(item.id)}
-                                                        className="text-red-500 text-sm hover:text-red-700"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                     <div className="border-t pt-4 mb-4">
                                         <div className="flex justify-between text-xl font-bold text-spice-maroon">
@@ -477,13 +518,12 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                         <input
                                             type="email"
                                             value={data.customer_email}
                                             onChange={(e) => setData('customer_email', e.target.value)}
                                             className="w-full border border-gray-300 rounded-lg px-4 py-2"
-                                            required
                                         />
                                     </div>
                                     <div>
@@ -498,13 +538,38 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
-                                        <textarea
+                                        <input
+                                            type="text"
                                             value={data.customer_address}
                                             onChange={(e) => setData('customer_address', e.target.value)}
                                             className="w-full border border-gray-300 rounded-lg px-4 py-2"
-                                            rows="3"
+                                            placeholder="Street address"
                                             required
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Postcode *</label>
+                                        <input
+                                            type="text"
+                                            value={data.customer_postcode}
+                                            onChange={(e) => setData('customer_postcode', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                            placeholder="e.g., MK1 1AA"
+                                            required
+                                        />
+                                        {errors.customer_postcode && <p className="text-red-500 text-sm mt-1">{errors.customer_postcode}</p>}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Do you have any allergies? *</label>
+                                        <textarea
+                                            value={data.allergies}
+                                            onChange={(e) => setData('allergies', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                            rows="3"
+                                            placeholder="Please list any allergies or dietary requirements. If none, please type 'None'."
+                                            required
+                                        />
+                                        {errors.allergies && <p className="text-red-500 text-sm mt-1">{errors.allergies}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
@@ -513,6 +578,7 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                             onChange={(e) => setData('notes', e.target.value)}
                                             className="w-full border border-gray-300 rounded-lg px-4 py-2"
                                             rows="3"
+                                            placeholder="Any additional notes or special instructions"
                                         />
                                     </div>
                                 </div>
@@ -533,6 +599,62 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Variant Selection Modal */}
+                {showVariantModal && selectedItemForVariant && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg p-8 max-w-md w-full">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-spice-maroon">Select Variant</h2>
+                                <button
+                                    onClick={() => {
+                                        setShowVariantModal(false);
+                                        setSelectedItemForVariant(null);
+                                    }}
+                                    className="text-gray-500 hover:text-gray-700"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="mb-6">
+                                <h3 className="text-lg font-semibold text-spice-maroon mb-2">{selectedItemForVariant.name}</h3>
+                                <p className="text-gray-600 text-sm">{selectedItemForVariant.description}</p>
+                            </div>
+
+                            <div className="space-y-3 mb-6">
+                                {selectedItemForVariant.options && selectedItemForVariant.options.length > 0 ? (
+                                    selectedItemForVariant.options.map((option) => (
+                                        <button
+                                            key={option.id}
+                                            onClick={() => handleVariantSelect(selectedItemForVariant, option)}
+                                            className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-spice-orange hover:bg-orange-50 transition text-left"
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-semibold text-gray-800">{option.name}</span>
+                                                <span className="text-lg font-bold text-spice-orange">£{parseFloat(option.price).toFixed(2)}</span>
+                                            </div>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-center py-4">No variants available</p>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setShowVariantModal(false);
+                                    setSelectedItemForVariant(null);
+                                }}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 )}

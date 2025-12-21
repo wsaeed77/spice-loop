@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MenuItem;
+use App\Models\MenuItemOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -32,11 +33,15 @@ class MenuController extends Controller
             'price' => 'required|numeric|min:0',
             'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'category' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:255',
             'is_available' => 'boolean',
             'is_available_today' => 'boolean',
             'is_subscription_item' => 'boolean',
             'is_featured' => 'boolean',
             'is_weekend_special' => 'boolean',
+            'options' => 'nullable|array',
+            'options.*.name' => 'required_with:options|string|max:255',
+            'options.*.price' => 'required_with:options|numeric|min:0',
         ]);
 
         // Handle file upload
@@ -48,14 +53,32 @@ class MenuController extends Controller
         // Remove image_file from validated data as it's not a database field
         unset($validated['image_file']);
 
-        MenuItem::create($validated);
+        // Handle options if type is 'halwa puri'
+        $options = $validated['options'] ?? [];
+        unset($validated['options']);
+
+        $menuItem = MenuItem::create($validated);
+
+        // Create options if provided
+        if (!empty($options)) {
+            foreach ($options as $index => $option) {
+                if (!empty($option['name']) && isset($option['price'])) {
+                    MenuItemOption::create([
+                        'menu_item_id' => $menuItem->id,
+                        'name' => $option['name'],
+                        'price' => $option['price'],
+                        'sort_order' => $index,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('admin.menu.index')->with('message', 'Menu item created successfully!');
     }
 
     public function edit($id)
     {
-        $menuItem = MenuItem::findOrFail($id);
+        $menuItem = MenuItem::with('options')->findOrFail($id);
         
         return Inertia::render('Admin/Menu/Edit', [
             'menuItem' => [
@@ -65,11 +88,19 @@ class MenuController extends Controller
                 'price' => (string) $menuItem->price,
                 'image' => $menuItem->image,
                 'category' => $menuItem->category,
+                'type' => $menuItem->type,
                 'is_available' => (bool) $menuItem->is_available,
                 'is_available_today' => (bool) ($menuItem->is_available_today ?? true),
                 'is_subscription_item' => (bool) $menuItem->is_subscription_item,
                 'is_featured' => (bool) $menuItem->is_featured,
                 'is_weekend_special' => (bool) $menuItem->is_weekend_special,
+                'options' => $menuItem->options->map(function ($option) {
+                    return [
+                        'id' => $option->id,
+                        'name' => $option->name,
+                        'price' => (string) $option->price,
+                    ];
+                }),
             ],
         ]);
     }
@@ -84,11 +115,15 @@ class MenuController extends Controller
             'price' => 'required|numeric|min:0',
             'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'category' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:255',
             'is_available' => 'boolean',
             'is_available_today' => 'boolean',
             'is_subscription_item' => 'boolean',
             'is_featured' => 'boolean',
             'is_weekend_special' => 'boolean',
+            'options' => 'nullable|array',
+            'options.*.name' => 'required_with:options|string|max:255',
+            'options.*.price' => 'required_with:options|numeric|min:0',
         ]);
 
         // Handle file upload
@@ -108,7 +143,29 @@ class MenuController extends Controller
         // Remove image_file from validated data as it's not a database field
         unset($validated['image_file']);
 
+        // Handle options if type is 'halwa puri'
+        $options = $validated['options'] ?? [];
+        unset($validated['options']);
+
         $menuItem->update($validated);
+
+        // Sync options for any menu item
+        // Delete existing options
+        $menuItem->options()->delete();
+        
+        // Create new options if provided
+        if (!empty($options)) {
+            foreach ($options as $index => $option) {
+                if (!empty($option['name']) && isset($option['price'])) {
+                    MenuItemOption::create([
+                        'menu_item_id' => $menuItem->id,
+                        'name' => $option['name'],
+                        'price' => $option['price'],
+                        'sort_order' => $index,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('admin.menu.index')->with('message', 'Menu item updated successfully!');
     }

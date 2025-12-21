@@ -12,10 +12,34 @@ class MenuController extends Controller
     public function index(Request $request)
     {
         // Show all menu items that are available (regardless of subscription status)
-        $menuItems = MenuItem::where('is_available', true)
+        $menuItems = MenuItem::with('options')
+            ->where('is_available', true)
             ->orderBy('category')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'image' => $item->image,
+                    'category' => $item->category,
+                    'type' => $item->type,
+                    'is_available' => $item->is_available,
+                    'is_available_today' => $item->is_available_today,
+                    'is_subscription_item' => $item->is_subscription_item,
+                    'is_featured' => $item->is_featured,
+                    'is_weekend_special' => $item->is_weekend_special,
+                    'options' => $item->options->map(function ($option) {
+                        return [
+                            'id' => $option->id,
+                            'name' => $option->name,
+                            'price' => $option->price,
+                        ];
+                    }),
+                ];
+            });
 
         $cities = City::where('is_active', true)->get();
 

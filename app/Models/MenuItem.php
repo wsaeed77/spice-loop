@@ -15,6 +15,7 @@ class MenuItem extends Model
         'price',
         'image',
         'category',
+        'type',
         'is_available',
         'is_available_today',
         'is_subscription_item',
@@ -44,5 +45,10 @@ class MenuItem extends Model
     public function dailySelections()
     {
         return $this->hasMany(DailySelection::class);
+    }
+
+    public function options()
+    {
+        return $this->hasMany(MenuItemOption::class)->orderBy('sort_order');
     }
 }

@@ -18,6 +18,8 @@ class Order extends Model
         'customer_email',
         'customer_phone',
         'customer_address',
+        'customer_postcode',
+        'allergies',
         'notes',
     ];
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CateringController as AdminCateringController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\CostCalculatorController;
+use App\Http\Controllers\Admin\MenuItemCalculatorController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -130,6 +131,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Cost Calculator
     Route::get('/cost-calculator', [CostCalculatorController::class, 'index'])->name('cost-calculator.index');
+    
+    // Menu Item Calculator
+    Route::get('/menu/{menuItem}/calculator', [MenuItemCalculatorController::class, 'show'])->name('menu-item-calculator.show');
+    Route::post('/menu/{menuItem}/calculator', [MenuItemCalculatorController::class, 'store'])->name('menu-item-calculator.store');
+    Route::delete('/menu/{menuItem}/calculator', [MenuItemCalculatorController::class, 'destroy'])->name('menu-item-calculator.destroy');
     
     // Special Orders Management
     Route::get('/special-orders', [AdminSpecialOrderController::class, 'index'])->name('special-orders.index');

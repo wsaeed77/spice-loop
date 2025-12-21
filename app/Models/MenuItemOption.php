@@ -5,35 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderItem extends Model
+class MenuItemOption extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'order_id',
         'menu_item_id',
-        'menu_item_option_id',
-        'quantity',
+        'name',
         'price',
+        'sort_order',
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
         'price' => 'decimal:2',
+        'sort_order' => 'integer',
     ];
-
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
-    }
 
     public function menuItem()
     {
         return $this->belongsTo(MenuItem::class);
     }
-
-    public function menuItemOption()
-    {
-        return $this->belongsTo(MenuItemOption::class);
-    }
 }
+

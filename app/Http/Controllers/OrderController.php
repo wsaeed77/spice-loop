@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\City;
 use App\Models\MenuItem;
+use App\Models\MenuItemOption;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -17,12 +18,15 @@ class OrderController extends Controller
         $validated = $request->validate([
             'city_id' => 'required|exists:cities,id',
             'customer_name' => 'required|string|max:255',
-            'customer_email' => 'required|email|max:255',
+            'customer_email' => 'nullable|email|max:255',
             'customer_phone' => 'required|string|max:20',
-            'customer_address' => 'required|string',
+            'customer_address' => 'required|string|max:255',
+            'customer_postcode' => 'required|string|max:20',
+            'allergies' => 'required|string',
             'items' => 'required|array|min:1',
             'items.*.menu_item_id' => 'required|exists:menu_items,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.menu_item_option_id' => 'nullable|exists:menu_item_options,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -46,13 +50,29 @@ class OrderController extends Controller
                     ]);
                 }
 
-                $itemTotal = $menuItem->price * $item['quantity'];
+                // Get price from variant if option is selected, otherwise use menu item price
+                $itemPrice = $menuItem->price;
+                $menuItemOptionId = null;
+                
+                if (!empty($item['menu_item_option_id'])) {
+                    $menuItemOption = MenuItemOption::where('id', $item['menu_item_option_id'])
+                        ->where('menu_item_id', $menuItem->id)
+                        ->first();
+                    
+                    if ($menuItemOption) {
+                        $itemPrice = $menuItemOption->price;
+                        $menuItemOptionId = $menuItemOption->id;
+                    }
+                }
+
+                $itemTotal = $itemPrice * $item['quantity'];
                 $totalAmount += $itemTotal;
 
                 $orderItems[] = [
                     'menu_item_id' => $menuItem->id,
+                    'menu_item_option_id' => $menuItemOptionId,
                     'quantity' => $item['quantity'],
-                    'price' => $menuItem->price,
+                    'price' => $itemPrice,
                 ];
             }
 
@@ -64,6 +84,8 @@ class OrderController extends Controller
                 'customer_email' => $validated['customer_email'],
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
+                'customer_postcode' => $validated['customer_postcode'],
+                'allergies' => $validated['allergies'],
                 'notes' => $validated['notes'] ?? null,
                 'status' => 'pending',
             ]);
@@ -72,6 +94,7 @@ class OrderController extends Controller
                 OrderItem::create([
                     'order_id' => $order->id,
                     'menu_item_id' => $item['menu_item_id'],
+                    'menu_item_option_id' => $item['menu_item_option_id'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                 ]);
