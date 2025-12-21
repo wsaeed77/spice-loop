@@ -45,7 +45,8 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
             </Head>
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <h1 className="text-4xl font-bold text-spice-maroon mb-8 text-center">Weekly Subscription</h1>
+                <h1 className="text-4xl font-bold text-spice-maroon mb-2 text-center">Weekly Subscription</h1>
+                <p className="text-lg text-gray-600 mb-8 text-center">Single serving meal including 2 roti or bowl of rice</p>
 
                 {flash?.message && (
                     <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">

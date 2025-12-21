@@ -230,7 +230,8 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
             {/* Weekly Menu Preview */}
             {weeklyMenu && Object.keys(weeklyMenu).length > 0 && (
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <h2 className="text-3xl font-bold text-spice-maroon mb-6 text-center">Weekly Subscription Menu</h2>
+                    <h2 className="text-3xl font-bold text-spice-maroon mb-2 text-center">Weekly Subscription Menu</h2>
+                    <p className="text-lg text-gray-600 mb-6 text-center">Single serving meal including 2 roti or bowl of rice</p>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         {days.map((day) => (
                             <div key={day} className="bg-white rounded-lg shadow-md p-4 border border-spice-orange">
