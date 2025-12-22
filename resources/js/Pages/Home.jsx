@@ -6,14 +6,30 @@ import { useCart } from '../contexts/CartContext';
 export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, weekendSpecial }) {
     const [heroImageError, setHeroImageError] = useState(false);
     const [videoError, setVideoError] = useState(false);
+    const [showVariantModal, setShowVariantModal] = useState(false);
+    const [selectedItemForVariant, setSelectedItemForVariant] = useState(null);
     const { addToCart } = useCart();
     
     const handleWeekendSpecialOrder = (e) => {
         e.preventDefault();
         if (weekendSpecial) {
-            addToCart(weekendSpecial);
-            router.visit('/menu');
+            // Check if item has options and show variant modal
+            if (weekendSpecial.options && weekendSpecial.options.length > 0) {
+                setSelectedItemForVariant(weekendSpecial);
+                setShowVariantModal(true);
+            } else {
+                // No options, add directly to cart
+                addToCart(weekendSpecial);
+                router.visit('/menu');
+            }
         }
+    };
+    
+    const handleVariantSelect = (item, option) => {
+        addToCart(item, option);
+        setShowVariantModal(false);
+        setSelectedItemForVariant(null);
+        router.visit('/menu');
     };
     
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
@@ -316,6 +332,64 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
                     </div>
                 </div>
             </div>
+
+            {/* Variant Selection Modal */}
+            {showVariantModal && selectedItemForVariant && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg p-8 max-w-md w-full">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-spice-maroon">Select Variant</h2>
+                            <button
+                                onClick={() => {
+                                    setShowVariantModal(false);
+                                    setSelectedItemForVariant(null);
+                                }}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-spice-maroon mb-2">{selectedItemForVariant.name}</h3>
+                            {selectedItemForVariant.description && (
+                                <p className="text-gray-600 text-sm">{selectedItemForVariant.description}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-3 mb-6">
+                            {selectedItemForVariant.options && selectedItemForVariant.options.length > 0 ? (
+                                selectedItemForVariant.options.map((option) => (
+                                    <button
+                                        key={option.id}
+                                        onClick={() => handleVariantSelect(selectedItemForVariant, option)}
+                                        className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-spice-orange hover:bg-orange-50 transition text-left"
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-semibold text-gray-800">{option.name}</span>
+                                            <span className="text-lg font-bold text-spice-orange">£{parseFloat(option.price).toFixed(2)}</span>
+                                        </div>
+                                    </button>
+                                ))
+                            ) : (
+                                <p className="text-gray-500 text-center py-4">No variants available</p>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                setShowVariantModal(false);
+                                setSelectedItemForVariant(null);
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
         </Layout>
     );
 }

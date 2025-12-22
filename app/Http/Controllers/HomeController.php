@@ -24,9 +24,35 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
-        $weekendSpecial = MenuItem::where('is_weekend_special', true)
+        $weekendSpecial = MenuItem::with('options')
+            ->where('is_weekend_special', true)
             ->where('is_available', true)
             ->first();
+        
+        // Format weekend special with options if it exists
+        if ($weekendSpecial) {
+            $weekendSpecial = [
+                'id' => $weekendSpecial->id,
+                'name' => $weekendSpecial->name,
+                'description' => $weekendSpecial->description,
+                'price' => $weekendSpecial->price,
+                'image' => $weekendSpecial->image,
+                'category' => $weekendSpecial->category,
+                'type' => $weekendSpecial->type,
+                'is_available' => $weekendSpecial->is_available,
+                'is_available_today' => $weekendSpecial->is_available_today,
+                'is_subscription_item' => $weekendSpecial->is_subscription_item,
+                'is_featured' => $weekendSpecial->is_featured,
+                'is_weekend_special' => $weekendSpecial->is_weekend_special,
+                'options' => $weekendSpecial->options->map(function ($option) {
+                    return [
+                        'id' => $option->id,
+                        'name' => $option->name,
+                        'price' => $option->price,
+                    ];
+                }),
+            ];
+        }
 
         return Inertia::render('Home', [
             'weeklyCharge' => $weeklyCharge,
