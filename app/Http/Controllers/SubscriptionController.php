@@ -46,12 +46,12 @@ class SubscriptionController extends Controller
             ->get();
 
         $meatCount = $selectedOptions->filter(function ($option) {
-            return $option->menuItem && $option->menuItem->dish_type === 'Meat';
+            return $option->menuItem && $option->menuItem->dish_type === 'Non-veg';
         })->count();
 
         if ($meatCount > 3) {
             return back()->withErrors([
-                'selected_menu_items' => 'You can only select a maximum of 3 meat dishes per week.'
+                'selected_menu_items' => 'You can only select a maximum of 3 non-veg dishes per week.'
             ])->withInput();
         }
 

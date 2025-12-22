@@ -220,7 +220,7 @@ export default function MenuEdit({ auth, menuItem }) {
                                 >
                                     <option value="">Select dish type</option>
                                     <option value="Veg">Veg</option>
-                                    <option value="Meat">Meat</option>
+                                    <option value="Non-veg">Non-veg</option>
                                 </select>
                                 {errors.dish_type && <p className="text-red-500 text-sm mt-1">{errors.dish_type}</p>}
                                 <p className="text-xs text-gray-500 mt-1">Required for subscription menu items.</p>

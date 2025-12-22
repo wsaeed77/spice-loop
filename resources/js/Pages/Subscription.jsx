@@ -31,19 +31,19 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
         // Remove previous selection from meat count if it was a meat dish
         if (previousSelection) {
             const prevOption = weeklyMenu[day]?.find(opt => opt.id === previousSelection);
-            if (prevOption?.menu_item?.dish_type === 'Meat') {
+            if (prevOption?.menu_item?.dish_type === 'Non-veg') {
                 newMeatCount = Math.max(0, newMeatCount - 1);
             }
         }
 
         // Add new selection to meat count if it's a meat dish
-        if (option.menu_item?.dish_type === 'Meat') {
+        if (option.menu_item?.dish_type === 'Non-veg') {
             newMeatCount = newMeatCount + 1;
         }
 
         // Check if we're exceeding the limit
-        if (newMeatCount > 3 && option.menu_item?.dish_type === 'Meat') {
-            alert('You can only select a maximum of 3 meat dishes per week.');
+        if (newMeatCount > 3 && option.menu_item?.dish_type === 'Non-veg') {
+            alert('You can only select a maximum of 3 non-veg dishes per week.');
             return;
         }
 
@@ -109,10 +109,10 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
                                 <div className="space-y-4">
                                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                         <p className="text-sm text-blue-800">
-                                            <strong>Note:</strong> You can select a maximum of <strong>3 meat dishes</strong> per week.
+                                            <strong>Note:</strong> You can select a maximum of <strong>3 non-veg dishes</strong> per week.
                                         </p>
                                         <p className="text-sm text-blue-700 mt-1">
-                                            Selected meat dishes: <strong>{meatCount}/3</strong>
+                                            Selected non-veg dishes: <strong>{meatCount}/3</strong>
                                         </p>
                                     </div>
                                     {days.map((day) => (
@@ -139,7 +139,7 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
                                                                 </div>
                                                                 {option.menu_item?.dish_type && (
                                                                     <span className={`text-xs px-2 py-1 rounded ${
-                                                                        option.menu_item.dish_type === 'Meat' 
+                                                                        option.menu_item.dish_type === 'Non-veg' 
                                                                             ? 'bg-red-100 text-red-700' 
                                                                             : 'bg-green-100 text-green-700'
                                                                     }`}>

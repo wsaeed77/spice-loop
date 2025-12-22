@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('menu_items') && !Schema::hasColumn('menu_items', 'dish_type')) {
             Schema::table('menu_items', function (Blueprint $table) {
-                $table->enum('dish_type', ['Veg', 'Meat'])->nullable()->after('type');
+                $table->enum('dish_type', ['Veg', 'Non-veg'])->nullable()->after('type');
             });
         }
     }
