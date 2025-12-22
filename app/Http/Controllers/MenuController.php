@@ -13,8 +13,10 @@ class MenuController extends Controller
     public function index(Request $request)
     {
         // Show all menu items that are available (regardless of subscription status)
+        // Sort by is_available_today (true first), then category, then name
         $menuItems = MenuItem::with('options')
             ->where('is_available', true)
+            ->orderByDesc('is_available_today')
             ->orderBy('category')
             ->orderBy('name')
             ->get()

@@ -1,9 +1,10 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState, useMemo } from 'react';
 import Layout from '../Components/Layout';
+import { useCart } from '../contexts/CartContext';
 
 export default function Menu({ auth, menuItems, cities, deliveryCost = 0, flash }) {
-    const [cart, setCart] = useState([]);
+    const { cart, addToCart: addToCartContext, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
     const [showCheckout, setShowCheckout] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('South Asian Cuisine');
     const [showCartMessage, setShowCartMessage] = useState(false);
@@ -82,17 +83,8 @@ export default function Menu({ auth, menuItems, cities, deliveryCost = 0, flash 
             return cOptionId === newOptionId;
         });
 
-        if (existingItemIndex !== -1) {
-            // Update quantity of existing item
-            setCart(cart.map((c, index) => 
-                index === existingItemIndex
-                    ? { ...c, quantity: c.quantity + 1 }
-                    : c
-            ));
-        } else {
-            // Add new item to cart
-            setCart([...cart, cartItem]);
-        }
+        // Use the context's addToCart function
+        addToCartContext(item, selectedOption);
         
         // Show success message
         const displayName = selectedOption ? `${item.name} (${selectedOption.name})` : item.name;
@@ -123,23 +115,16 @@ export default function Menu({ auth, menuItems, cities, deliveryCost = 0, flash 
         addToCart(item, option);
     };
 
-    const removeFromCart = (cartIndex) => {
-        setCart(cart.filter((_, index) => index !== cartIndex));
+    const handleRemoveFromCart = (cartIndex) => {
+        removeFromCart(cartIndex);
     };
 
-    const updateQuantity = (cartIndex, quantity) => {
-        if (quantity <= 0) {
-            removeFromCart(cartIndex);
-        } else {
-            setCart(cart.map((c, index) => index === cartIndex ? { ...c, quantity } : c));
-        }
+    const handleUpdateQuantity = (cartIndex, quantity) => {
+        updateQuantity(cartIndex, quantity);
     };
 
     // Calculate subtotal (cart items only)
-    const subtotal = cart.reduce((sum, item) => {
-        const itemPrice = item.price || parseFloat(item.price);
-        return sum + (itemPrice * item.quantity);
-    }, 0);
+    const subtotal = getCartTotal();
 
     // Calculate delivery charge (if subtotal < £10)
     const deliveryCharge = subtotal > 0 && subtotal < 10 ? (parseFloat(deliveryCost) || 0) : 0;
@@ -187,7 +172,7 @@ export default function Menu({ auth, menuItems, cities, deliveryCost = 0, flash 
         })));
         post('/orders', {
             onSuccess: () => {
-                setCart([]);
+                clearCart();
                 setShowCheckout(false);
             },
         });
@@ -450,14 +435,14 @@ export default function Menu({ auth, menuItems, cities, deliveryCost = 0, flash 
                                                         )}
                                                         <div className="flex items-center space-x-2 mt-1">
                                                             <button
-                                                                onClick={() => updateQuantity(index, item.quantity - 1)}
+                                                                onClick={() => handleUpdateQuantity(index, item.quantity - 1)}
                                                                 className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
                                                             >
                                                                 -
                                                             </button>
                                                             <span>{item.quantity}</span>
                                                             <button
-                                                                onClick={() => updateQuantity(index, item.quantity + 1)}
+                                                                onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
                                                                 className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
                                                             >
                                                                 +
@@ -467,7 +452,7 @@ export default function Menu({ auth, menuItems, cities, deliveryCost = 0, flash 
                                                     <div className="text-right">
                                                         <p className="font-semibold">£{(itemPrice * item.quantity).toFixed(2)}</p>
                                                         <button
-                                                            onClick={() => removeFromCart(index)}
+                                                            onClick={() => handleRemoveFromCart(index)}
                                                             className="text-red-500 text-sm hover:text-red-700"
                                                         >
                                                             Remove

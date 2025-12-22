@@ -1,5 +1,6 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { useCart } from '../contexts/CartContext';
 
 // Format UK phone number
 const formatUKPhone = (phone) => {
@@ -63,8 +64,10 @@ export default function Layout({ children, auth }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const [footerLogoError, setFooterLogoError] = useState(false);
+    const { getCartItemCount } = useCart();
     
     const formattedPhone = settings?.contact_phone ? formatUKPhone(settings.contact_phone) : '';
+    const cartItemCount = getCartItemCount();
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-spice-cream to-white">
@@ -122,6 +125,21 @@ export default function Layout({ children, auth }) {
                             </button>
                             {/* Desktop Right Side */}
                             <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+                            {/* Cart Icon */}
+                            <Link 
+                                href="/menu" 
+                                className="relative p-2 text-gray-500 hover:text-spice-maroon transition-colors"
+                                title="View Cart"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                {cartItemCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-spice-orange text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                        {cartItemCount > 9 ? '9+' : cartItemCount}
+                                    </span>
+                                )}
+                            </Link>
                             {formattedPhone && (
                                 <a 
                                     href={`tel:${settings.contact_phone.replace(/\D/g, '')}`}
@@ -191,6 +209,25 @@ export default function Layout({ children, auth }) {
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     Catering
+                                </Link>
+                                
+                                {/* Mobile Cart Icon */}
+                                <Link
+                                    href="/menu"
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <div className="flex items-center">
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        Cart
+                                        {cartItemCount > 0 && (
+                                            <span className="ml-2 bg-spice-orange text-white text-xs font-bold rounded-full px-2 py-0.5">
+                                                {cartItemCount > 9 ? '9+' : cartItemCount}
+                                            </span>
+                                        )}
+                                    </div>
                                 </Link>
                                 
                                 {/* Mobile Phone Number */}

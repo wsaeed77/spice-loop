@@ -1,10 +1,20 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import Layout from '../Components/Layout';
+import { useCart } from '../contexts/CartContext';
 
 export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, weekendSpecial }) {
     const [heroImageError, setHeroImageError] = useState(false);
     const [videoError, setVideoError] = useState(false);
+    const { addToCart } = useCart();
+    
+    const handleWeekendSpecialOrder = (e) => {
+        e.preventDefault();
+        if (weekendSpecial) {
+            addToCart(weekendSpecial);
+            router.visit('/menu');
+        }
+    };
     
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dayLabels = {
@@ -158,12 +168,12 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
                                         <div className="bg-gradient-to-r from-spice-orange to-spice-gold text-white px-8 py-4 rounded-xl font-bold text-3xl shadow-lg">
                                             £{parseFloat(weekendSpecial.price).toFixed(2)}
                                         </div>
-                                        <Link 
-                                            href="/menu" 
+                                        <button 
+                                            onClick={handleWeekendSpecialOrder}
                                             className="bg-spice-maroon hover:bg-spice-red text-white px-10 py-4 rounded-xl font-semibold text-lg transition shadow-lg hover:shadow-xl transform hover:scale-105"
                                         >
                                             Order Now →
-                                        </Link>
+                                        </button>
                                     </div>
                                     {weekendSpecial.category && (
                                         <p className="text-gray-600 text-sm font-medium">
