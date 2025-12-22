@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MenuItem;
 use App\Models\Setting;
 use App\Models\WeeklyMenuOption;
 use Illuminate\Http\Request;
@@ -31,7 +32,28 @@ class SubscriptionController extends Controller
             'phone' => 'required|string|max:20',
             'address' => 'required|string',
             'city' => 'required|string|max:255',
+            'selected_menu_items' => 'required|array',
+            'selected_menu_items.monday' => 'required|exists:weekly_menu_options,id',
+            'selected_menu_items.tuesday' => 'required|exists:weekly_menu_options,id',
+            'selected_menu_items.wednesday' => 'required|exists:weekly_menu_options,id',
+            'selected_menu_items.thursday' => 'required|exists:weekly_menu_options,id',
+            'selected_menu_items.friday' => 'required|exists:weekly_menu_options,id',
         ]);
+
+        // Validate that only 3 meat dishes are selected
+        $selectedOptions = WeeklyMenuOption::with('menuItem')
+            ->whereIn('id', array_values($validated['selected_menu_items']))
+            ->get();
+
+        $meatCount = $selectedOptions->filter(function ($option) {
+            return $option->menuItem && $option->menuItem->dish_type === 'Meat';
+        })->count();
+
+        if ($meatCount > 3) {
+            return back()->withErrors([
+                'selected_menu_items' => 'You can only select a maximum of 3 meat dishes per week.'
+            ])->withInput();
+        }
 
         \App\Models\SubscriptionRequest::create([
             'name' => $validated['name'],
@@ -40,6 +62,7 @@ class SubscriptionController extends Controller
             'address' => $validated['address'],
             'city' => $validated['city'],
             'status' => 'pending',
+            'selected_menu_items' => $validated['selected_menu_items'],
         ]);
 
         return redirect()->route('subscription')->with('message', 'Subscription request submitted! We will contact you soon to set up your account.');

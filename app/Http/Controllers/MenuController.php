@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\City;
 use App\Models\MenuItem;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -42,10 +43,12 @@ class MenuController extends Controller
             });
 
         $cities = City::where('is_active', true)->get();
+        $deliveryCost = (float) Setting::get('delivery_cost', '0.00');
 
         return Inertia::render('Menu', [
             'menuItems' => $menuItems,
             'cities' => $cities,
+            'deliveryCost' => $deliveryCost,
         ]);
     }
 }

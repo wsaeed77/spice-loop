@@ -17,10 +17,13 @@ class SubscriptionRequest extends Model
         'city',
         'status',
         'notes',
+        'selected_menu_items',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'selected_menu_items' => 'array',
     ];
+
 }

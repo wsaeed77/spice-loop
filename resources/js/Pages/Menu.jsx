@@ -2,7 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useState, useMemo } from 'react';
 import Layout from '../Components/Layout';
 
-export default function Menu({ auth, menuItems, cities, flash }) {
+export default function Menu({ auth, menuItems, cities, deliveryCost = 0, flash }) {
     const [cart, setCart] = useState([]);
     const [showCheckout, setShowCheckout] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('South Asian Cuisine');
@@ -135,10 +135,17 @@ export default function Menu({ auth, menuItems, cities, flash }) {
         }
     };
 
-    const total = cart.reduce((sum, item) => {
+    // Calculate subtotal (cart items only)
+    const subtotal = cart.reduce((sum, item) => {
         const itemPrice = item.price || parseFloat(item.price);
         return sum + (itemPrice * item.quantity);
     }, 0);
+
+    // Calculate delivery charge (if subtotal < £10)
+    const deliveryCharge = subtotal > 0 && subtotal < 10 ? (parseFloat(deliveryCost) || 0) : 0;
+    
+    // Calculate total (subtotal + delivery charge)
+    const total = subtotal + deliveryCharge;
 
     const openSpecialOrderModal = (item) => {
         setSelectedSpecialOrderItem(item);
@@ -307,6 +314,9 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                 <div className="flex-1">
                                     <p className="text-sm text-gray-600">Cart ({cart.length} {cart.length === 1 ? 'item' : 'items'})</p>
                                     <p className="text-lg font-bold text-spice-maroon">£{total.toFixed(2)}</p>
+                                    {deliveryCharge > 0 && (
+                                        <p className="text-xs text-gray-500">Inc. delivery £{deliveryCharge.toFixed(2)}</p>
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => {
@@ -467,8 +477,23 @@ export default function Menu({ auth, menuItems, cities, flash }) {
                                             );
                                         })}
                                     </div>
-                                    <div className="border-t pt-4 mb-4">
-                                        <div className="flex justify-between text-xl font-bold text-spice-maroon">
+                                    <div className="border-t pt-4 mb-4 space-y-2">
+                                        <div className="flex justify-between text-sm text-gray-600">
+                                            <span>Subtotal:</span>
+                                            <span>£{subtotal.toFixed(2)}</span>
+                                        </div>
+                                        {deliveryCharge > 0 && (
+                                            <div className="flex justify-between text-sm text-gray-600">
+                                                <span>Delivery Charge:</span>
+                                                <span>£{deliveryCharge.toFixed(2)}</span>
+                                            </div>
+                                        )}
+                                        {subtotal > 0 && subtotal < 10 && deliveryCharge === 0 && (
+                                            <div className="text-xs text-gray-500 italic">
+                                                Free delivery on orders over £10
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-xl font-bold text-spice-maroon pt-2 border-t">
                                             <span>Total:</span>
                                             <span>£{total.toFixed(2)}</span>
                                         </div>

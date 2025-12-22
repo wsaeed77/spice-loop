@@ -236,9 +236,14 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
                         {days.map((day) => (
                             <div key={day} className="bg-white rounded-lg shadow-md p-4 border border-spice-orange">
                                 <h3 className="font-bold text-spice-maroon mb-3">{dayLabels[day]}</h3>
-                                {weeklyMenu[day]?.map((option) => (
-                                    <div key={option.id} className="text-sm text-gray-600 mb-2">
-                                        • {option.menu_item?.name}
+                                {weeklyMenu[day]?.map((option, index) => (
+                                    <div key={option.id}>
+                                        {index > 0 && (
+                                            <div className="text-sm font-semibold text-spice-maroon my-2 text-center">OR</div>
+                                        )}
+                                        <div className="text-sm text-gray-600">
+                                            {option.menu_item?.name}
+                                        </div>
                                     </div>
                                 ))}
                             </div>

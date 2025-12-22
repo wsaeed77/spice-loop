@@ -16,6 +16,7 @@ class MenuItem extends Model
         'image',
         'category',
         'type',
+        'dish_type',
         'is_available',
         'is_available_today',
         'is_subscription_item',

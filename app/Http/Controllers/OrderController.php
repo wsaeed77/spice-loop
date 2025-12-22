@@ -7,6 +7,7 @@ use App\Models\MenuItem;
 use App\Models\MenuItemOption;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -39,7 +40,7 @@ class OrderController extends Controller
 
         DB::beginTransaction();
         try {
-            $totalAmount = 0;
+            $subtotal = 0;
             $orderItems = [];
 
             foreach ($validated['items'] as $item) {
@@ -66,7 +67,7 @@ class OrderController extends Controller
                 }
 
                 $itemTotal = $itemPrice * $item['quantity'];
-                $totalAmount += $itemTotal;
+                $subtotal += $itemTotal;
 
                 $orderItems[] = [
                     'menu_item_id' => $menuItem->id,
@@ -76,10 +77,16 @@ class OrderController extends Controller
                 ];
             }
 
+            // Calculate delivery charge (if subtotal < £10)
+            $deliveryCost = (float) Setting::get('delivery_cost', '0.00');
+            $deliveryCharge = $subtotal > 0 && $subtotal < 10 ? $deliveryCost : 0;
+            $totalAmount = $subtotal + $deliveryCharge;
+
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'city_id' => $validated['city_id'],
                 'total_amount' => $totalAmount,
+                'delivery_charge' => $deliveryCharge,
                 'customer_name' => $validated['customer_name'],
                 'customer_email' => $validated['customer_email'],
                 'customer_phone' => $validated['customer_phone'],
