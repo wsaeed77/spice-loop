@@ -122,7 +122,7 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
                                                 {weeklyMenu[day]?.map((option, index) => (
                                                     <div key={option.id}>
                                                         {index > 0 && (
-                                                            <div className="text-sm font-semibold text-spice-maroon my-2 text-center">OR</div>
+                                                            <div className="text-sm font-semibold text-spice-maroon my-2 text-left">OR</div>
                                                         )}
                                                         <label className="flex items-start cursor-pointer hover:bg-gray-50 p-2 rounded">
                                                             <input

@@ -239,7 +239,7 @@ export default function Home({ auth, weeklyCharge, weeklyMenu, featuredItems, we
                                 {weeklyMenu[day]?.map((option, index) => (
                                     <div key={option.id}>
                                         {index > 0 && (
-                                            <div className="text-sm font-semibold text-spice-maroon my-2 text-center">OR</div>
+                                            <div className="text-sm font-semibold text-spice-maroon my-2 text-left">OR</div>
                                         )}
                                         <div className="text-sm text-gray-600">
                                             {option.menu_item?.name}

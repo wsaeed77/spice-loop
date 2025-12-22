@@ -10,6 +10,7 @@ export default function MenuCreate({ auth }) {
         image_file: null,
         category: '',
         type: '',
+        dish_type: '',
         is_available: true,
         is_available_today: true,
         is_subscription_item: false,
@@ -145,23 +146,43 @@ export default function MenuCreate({ auth }) {
                             </div>
                         </div>
 
-                        <div>
-                            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-                                Type <span className="text-xs text-gray-500">(Internal - not visible to customers)</span>
-                            </label>
-                            <select
-                                id="type"
-                                value={data.type}
-                                onChange={(e) => setData('type', e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
-                            >
-                                <option value="">Select a type</option>
-                                {types.filter(t => t !== '').map((type) => (
-                                    <option key={type} value={type}>{type}</option>
-                                ))}
-                            </select>
-                            {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type}</p>}
-                            <p className="text-xs text-gray-500 mt-1">This field is used internally to control menu selection behavior.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Type <span className="text-xs text-gray-500">(Internal - not visible to customers)</span>
+                                </label>
+                                <select
+                                    id="type"
+                                    value={data.type}
+                                    onChange={(e) => setData('type', e.target.value)}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                >
+                                    <option value="">Select a type</option>
+                                    {types.filter(t => t !== '').map((type) => (
+                                        <option key={type} value={type}>{type}</option>
+                                    ))}
+                                </select>
+                                {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type}</p>}
+                                <p className="text-xs text-gray-500 mt-1">This field is used internally to control menu selection behavior.</p>
+                            </div>
+
+                            <div>
+                                <label htmlFor="dish_type" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Dish Type
+                                </label>
+                                <select
+                                    id="dish_type"
+                                    value={data.dish_type}
+                                    onChange={(e) => setData('dish_type', e.target.value)}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                >
+                                    <option value="">Select dish type</option>
+                                    <option value="Veg">Veg</option>
+                                    <option value="Meat">Meat</option>
+                                </select>
+                                {errors.dish_type && <p className="text-red-500 text-sm mt-1">{errors.dish_type}</p>}
+                                <p className="text-xs text-gray-500 mt-1">Required for subscription menu items.</p>
+                            </div>
                         </div>
 
                         <div className="border border-gray-300 rounded-lg p-6 bg-gray-50">
