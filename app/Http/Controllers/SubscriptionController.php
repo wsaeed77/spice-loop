@@ -13,6 +13,7 @@ class SubscriptionController extends Controller
     public function index()
     {
         $weeklyCharge = (float) Setting::get('weekly_menu_price', '50.00');
+        $maxNonVegDishes = (int) Setting::get('max_non_veg_dishes', '3');
         $weeklyMenu = WeeklyMenuOption::with('menuItem')
             ->where('is_available', true)
             ->get()
@@ -20,6 +21,7 @@ class SubscriptionController extends Controller
 
         return Inertia::render('Subscription', [
             'weeklyCharge' => $weeklyCharge,
+            'maxNonVegDishes' => $maxNonVegDishes,
             'weeklyMenu' => $weeklyMenu,
         ]);
     }
@@ -40,7 +42,8 @@ class SubscriptionController extends Controller
             'selected_menu_items.friday' => 'required|exists:weekly_menu_options,id',
         ]);
 
-        // Validate that only 3 meat dishes are selected
+        // Validate that only max non-veg dishes are selected
+        $maxNonVegDishes = (int) Setting::get('max_non_veg_dishes', '3');
         $selectedOptions = WeeklyMenuOption::with('menuItem')
             ->whereIn('id', array_values($validated['selected_menu_items']))
             ->get();
@@ -49,9 +52,9 @@ class SubscriptionController extends Controller
             return $option->menuItem && $option->menuItem->dish_type === 'Non-veg';
         })->count();
 
-        if ($meatCount > 3) {
+        if ($meatCount > $maxNonVegDishes) {
             return back()->withErrors([
-                'selected_menu_items' => 'You can only select a maximum of 3 non-veg dishes per week.'
+                'selected_menu_items' => "You can only select a maximum of {$maxNonVegDishes} non-veg dishes per week."
             ])->withInput();
         }
 

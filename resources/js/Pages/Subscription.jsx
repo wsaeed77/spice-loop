@@ -2,7 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import Layout from '../Components/Layout';
 
-export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) {
+export default function Subscription({ auth, weeklyCharge, maxNonVegDishes = 3, weeklyMenu, flash }) {
     const [selectedItems, setSelectedItems] = useState({});
     const [meatCount, setMeatCount] = useState(0);
 
@@ -42,8 +42,8 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
         }
 
         // Check if we're exceeding the limit
-        if (newMeatCount > 3 && option.menu_item?.dish_type === 'Non-veg') {
-            alert('You can only select a maximum of 3 non-veg dishes per week.');
+        if (newMeatCount > maxNonVegDishes && option.menu_item?.dish_type === 'Non-veg') {
+            alert(`You can only select a maximum of ${maxNonVegDishes} non-veg dishes per week.`);
             return;
         }
 
@@ -109,10 +109,10 @@ export default function Subscription({ auth, weeklyCharge, weeklyMenu, flash }) 
                                 <div className="space-y-4">
                                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                         <p className="text-sm text-blue-800">
-                                            <strong>Note:</strong> You can select a maximum of <strong>3 non-veg dishes</strong> per week.
+                                            <strong>Note:</strong> You can select a maximum of <strong>{maxNonVegDishes} non-veg dishes</strong> per week.
                                         </p>
                                         <p className="text-sm text-blue-700 mt-1">
-                                            Selected non-veg dishes: <strong>{meatCount}/3</strong>
+                                            Selected non-veg dishes: <strong>{meatCount}/{maxNonVegDishes}</strong>
                                         </p>
                                     </div>
                                     {days.map((day) => (

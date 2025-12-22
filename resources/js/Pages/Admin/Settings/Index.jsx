@@ -5,6 +5,7 @@ export default function SettingsIndex({ auth, settings, flash }) {
     const { data, setData, put, processing, errors } = useForm({
         weekly_menu_price: settings.weekly_menu_price || '50.00',
         delivery_cost: settings.delivery_cost || '0.00',
+        max_non_veg_dishes: settings.max_non_veg_dishes || '3',
         contact_phone: settings.contact_phone || '',
         whatsapp_number: settings.whatsapp_number || '',
         facebook_url: settings.facebook_url || '',
@@ -75,6 +76,26 @@ export default function SettingsIndex({ auth, settings, flash }) {
                             />
                             <p className="mt-1 text-sm text-gray-500">Fixed delivery cost used in the cost calculator. This will be automatically included when calculating menu item costs.</p>
                             {errors.delivery_cost && <p className="text-red-500 text-sm mt-1">{errors.delivery_cost}</p>}
+                        </div>
+
+                        {/* Max Non-Veg Dishes */}
+                        <div>
+                            <label htmlFor="max_non_veg_dishes" className="block text-sm font-medium text-gray-700 mb-2">
+                                Maximum Non-Veg Dishes Per Week
+                            </label>
+                            <input
+                                type="number"
+                                id="max_non_veg_dishes"
+                                step="1"
+                                min="0"
+                                max="5"
+                                value={data.max_non_veg_dishes}
+                                onChange={(e) => setData('max_non_veg_dishes', e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                required
+                            />
+                            <p className="mt-1 text-sm text-gray-500">Maximum number of non-veg dishes that can be selected in a weekly subscription (0-5).</p>
+                            {errors.max_non_veg_dishes && <p className="text-red-500 text-sm mt-1">{errors.max_non_veg_dishes}</p>}
                         </div>
 
                         {/* Contact Phone */}
