@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NewOrderNotification;
+use App\Services\SmsService;
 use App\Models\City;
 use App\Models\MenuItem;
 use App\Models\MenuItemOption;
@@ -10,6 +12,7 @@ use App\Models\OrderItem;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
@@ -108,6 +111,27 @@ class OrderController extends Controller
             }
 
             DB::commit();
+
+            // Refresh order and load relationships for email
+            $order->refresh();
+            $order->load(['orderItems.menuItem', 'orderItems.menuItemOption', 'city', 'user']);
+
+            // Send email notification to info@spiceloop.com and spiceloop2@gmail.com
+            try {
+                Mail::to(['info@spiceloop.com', 'spiceloop2@gmail.com'])->send(new NewOrderNotification($order));
+            } catch (\Exception $e) {
+                // Log the error but don't fail the order creation
+                \Log::error('Failed to send order notification email: ' . $e->getMessage());
+            }
+
+            // Send SMS notification
+            try {
+                $smsService = new SmsService();
+                $smsService->sendOrderNotification($order);
+            } catch (\Exception $e) {
+                // Log the error but don't fail the order creation
+                \Log::error('Failed to send order notification SMS: ' . $e->getMessage());
+            }
 
             return redirect()->route('menu')->with('message', 'Order placed successfully! We will contact you soon.');
         } catch (\Exception $e) {
