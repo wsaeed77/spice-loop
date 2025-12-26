@@ -32,8 +32,7 @@ class ContactController extends Controller
             'address' => 'nullable|string',
             'postcode' => 'nullable|string|max:255',
             'is_existing_customer' => 'boolean',
-            'allow_sms_promotions' => 'boolean',
-            'allow_whatsapp_promotions' => 'boolean',
+            'allow_promotions' => 'boolean',
         ]);
 
         Contact::create($validated);
@@ -57,8 +56,7 @@ class ContactController extends Controller
             'address' => 'nullable|string',
             'postcode' => 'nullable|string|max:255',
             'is_existing_customer' => 'boolean',
-            'allow_sms_promotions' => 'boolean',
-            'allow_whatsapp_promotions' => 'boolean',
+            'allow_promotions' => 'boolean',
         ]);
 
         $contact->update($validated);

@@ -9,8 +9,7 @@ export default function ContactCreate({ auth }) {
         address: '',
         postcode: '',
         is_existing_customer: false,
-        allow_sms_promotions: false,
-        allow_whatsapp_promotions: false,
+        allow_promotions: false,
     });
 
     const handleSubmit = (e) => {
@@ -126,30 +125,16 @@ export default function ContactCreate({ auth }) {
                             </div>
 
                             <div className="border-t border-gray-200 pt-4">
-                                <h3 className="text-sm font-semibold text-gray-900 mb-3">Communication Permissions</h3>
-                                <div className="space-y-3">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={data.allow_sms_promotions}
-                                            onChange={(e) => setData('allow_sms_promotions', e.target.checked)}
-                                            className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Allow SMS Promotions</span>
-                                    </label>
-                                    {errors.allow_sms_promotions && <p className="text-red-500 text-sm mt-1">{errors.allow_sms_promotions}</p>}
-
-                                    <label className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={data.allow_whatsapp_promotions}
-                                            onChange={(e) => setData('allow_whatsapp_promotions', e.target.checked)}
-                                            className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Allow WhatsApp Promotions</span>
-                                    </label>
-                                    {errors.allow_whatsapp_promotions && <p className="text-red-500 text-sm mt-1">{errors.allow_whatsapp_promotions}</p>}
-                                </div>
+                                <label className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={data.allow_promotions}
+                                        onChange={(e) => setData('allow_promotions', e.target.checked)}
+                                        className="rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">Allow SMS and WhatsApp for promotions and menu updates</span>
+                                </label>
+                                {errors.allow_promotions && <p className="text-red-500 text-sm mt-1">{errors.allow_promotions}</p>}
                             </div>
                         </div>
 

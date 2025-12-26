@@ -16,14 +16,12 @@ class Contact extends Model
         'address',
         'postcode',
         'is_existing_customer',
-        'allow_sms_promotions',
-        'allow_whatsapp_promotions',
+        'allow_promotions',
     ];
 
     protected $casts = [
         'is_existing_customer' => 'boolean',
-        'allow_sms_promotions' => 'boolean',
-        'allow_whatsapp_promotions' => 'boolean',
+        'allow_promotions' => 'boolean',
     ];
 }
 

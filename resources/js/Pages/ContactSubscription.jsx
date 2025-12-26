@@ -7,8 +7,7 @@ export default function ContactSubscription({ auth, flash }) {
         name: '',
         address: '',
         postcode: '',
-        allow_sms_promotions: false,
-        allow_whatsapp_promotions: false,
+        allow_promotions: false,
     });
 
     const handleSubmit = (e) => {
@@ -99,40 +98,19 @@ export default function ContactSubscription({ auth, flash }) {
                         </div>
 
                         <div className="border-t border-gray-200 pt-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Communication Preferences</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Please select how you would like to receive updates about promotions and menu updates:
-                            </p>
-                            
-                            <div className="space-y-4">
-                                <label className="flex items-start">
-                                    <input
-                                        type="checkbox"
-                                        checked={data.allow_sms_promotions}
-                                        onChange={(e) => setData('allow_sms_promotions', e.target.checked)}
-                                        className="mt-1 rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
-                                    />
-                                    <div className="ml-3">
-                                        <span className="text-sm font-medium text-gray-700">SMS Promotions</span>
-                                        <p className="text-xs text-gray-500">Receive promotional offers and menu updates via SMS</p>
-                                    </div>
-                                </label>
-                                {errors.allow_sms_promotions && <p className="text-red-500 text-sm mt-1">{errors.allow_sms_promotions}</p>}
-
-                                <label className="flex items-start">
-                                    <input
-                                        type="checkbox"
-                                        checked={data.allow_whatsapp_promotions}
-                                        onChange={(e) => setData('allow_whatsapp_promotions', e.target.checked)}
-                                        className="mt-1 rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
-                                    />
-                                    <div className="ml-3">
-                                        <span className="text-sm font-medium text-gray-700">WhatsApp Promotions</span>
-                                        <p className="text-xs text-gray-500">Receive promotional offers and menu updates via WhatsApp</p>
-                                    </div>
-                                </label>
-                                {errors.allow_whatsapp_promotions && <p className="text-red-500 text-sm mt-1">{errors.allow_whatsapp_promotions}</p>}
-                            </div>
+                            <label className="flex items-start">
+                                <input
+                                    type="checkbox"
+                                    checked={data.allow_promotions}
+                                    onChange={(e) => setData('allow_promotions', e.target.checked)}
+                                    className="mt-1 rounded border-gray-300 text-spice-orange focus:ring-spice-orange"
+                                />
+                                <div className="ml-3">
+                                    <span className="text-sm font-medium text-gray-700">Allow SMS and WhatsApp for promotions and menu updates</span>
+                                    <p className="text-xs text-gray-500 mt-1">Receive promotional offers and menu updates via SMS and WhatsApp</p>
+                                </div>
+                            </label>
+                            {errors.allow_promotions && <p className="text-red-500 text-sm mt-1 ml-7">{errors.allow_promotions}</p>}
                         </div>
 
                         <button

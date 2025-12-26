@@ -57,8 +57,7 @@ export default function ContactsIndex({ auth, contacts, flash }) {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Address</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Postcode</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Customer Type</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">SMS</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">WhatsApp</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Promotions</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Date Added</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -92,24 +91,13 @@ export default function ContactsIndex({ auth, contacts, flash }) {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                {contact.allow_sms_promotions ? (
-                                                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                        ✓
-                                                    </span>
-                                                ) : (
-                                                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-500">
-                                                        —
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {contact.allow_whatsapp_promotions ? (
+                                                {contact.allow_promotions ? (
                                                     <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                        ✓
+                                                        ✓ Allowed
                                                     </span>
                                                 ) : (
                                                     <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-500">
-                                                        —
+                                                        Not Allowed
                                                     </span>
                                                 )}
                                             </td>
@@ -136,7 +124,7 @@ export default function ContactsIndex({ auth, contacts, flash }) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="10" className="px-6 py-4 text-center text-gray-500">
+                                        <td colSpan="9" className="px-6 py-4 text-center text-gray-500">
                                             No contacts found. <Link href="/admin/contacts/create" className="text-spice-orange hover:text-spice-maroon">Add your first contact</Link>
                                         </td>
                                     </tr>

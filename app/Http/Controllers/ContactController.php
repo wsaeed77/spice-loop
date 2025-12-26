@@ -20,8 +20,7 @@ class ContactController extends Controller
             'name' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'postcode' => 'nullable|string|max:255',
-            'allow_sms_promotions' => 'boolean',
-            'allow_whatsapp_promotions' => 'boolean',
+            'allow_promotions' => 'boolean',
         ]);
 
         // Use updateOrCreate to handle existing phone numbers
@@ -31,8 +30,7 @@ class ContactController extends Controller
                 'name' => $validated['name'] ?? null,
                 'address' => $validated['address'] ?? null,
                 'postcode' => $validated['postcode'] ?? null,
-                'allow_sms_promotions' => $validated['allow_sms_promotions'] ?? false,
-                'allow_whatsapp_promotions' => $validated['allow_whatsapp_promotions'] ?? false,
+                'allow_promotions' => $validated['allow_promotions'] ?? false,
             ]
         );
 
