@@ -31,8 +31,24 @@ class SmsService
      */
     public function send(string $message): bool
     {
+        $accountSid = config('services.twilio.account_sid');
+        $authToken = config('services.twilio.auth_token');
+        $fromNumber = config('services.twilio.from_number');
+        $toNumber = config('services.twilio.to_number');
+
+        $missing = [];
+        if (!$accountSid) $missing[] = 'TWILIO_ACCOUNT_SID';
+        if (!$authToken) $missing[] = 'TWILIO_AUTH_TOKEN';
+        if (!$fromNumber) $missing[] = 'TWILIO_FROM_NUMBER';
+        if (!$toNumber) $missing[] = 'TWILIO_TO_NUMBER';
+
+        if (!empty($missing)) {
+            Log::warning('SMS not sent: Missing Twilio configuration. Please set the following in your .env file: ' . implode(', ', $missing));
+            return false;
+        }
+
         if (!$this->client || !$this->fromNumber || !$this->toNumber) {
-            Log::warning('SMS not sent: Twilio credentials or phone numbers not configured');
+            Log::warning('SMS not sent: Twilio client initialization failed');
             return false;
         }
 
@@ -45,9 +61,14 @@ class SmsService
                 ]
             );
 
+            Log::info('SMS sent successfully to ' . $this->toNumber);
             return true;
         } catch (\Exception $e) {
-            Log::error('Failed to send SMS: ' . $e->getMessage());
+            Log::error('Failed to send SMS: ' . $e->getMessage(), [
+                'exception' => $e,
+                'from' => $this->fromNumber,
+                'to' => $this->toNumber
+            ]);
             return false;
         }
     }

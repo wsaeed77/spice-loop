@@ -12,11 +12,12 @@ class CostCalculatorController extends Controller
     public function index()
     {
         $deliveryCost = (float) Setting::get('delivery_cost', '0.00');
-        
+
         return Inertia::render('Admin/CostCalculator/Index', [
             'deliveryCost' => $deliveryCost,
         ]);
     }
 }
+
 
 

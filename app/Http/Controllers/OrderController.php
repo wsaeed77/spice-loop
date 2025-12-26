@@ -118,10 +118,19 @@ class OrderController extends Controller
 
             // Send email notification to info@spiceloop.com and spiceloop2@gmail.com
             try {
-                Mail::to(['info@spiceloop.com', 'spiceloop2@gmail.com'])->send(new NewOrderNotification($order));
+                $mailDriver = config('mail.default');
+                if ($mailDriver === 'log') {
+                    \Log::warning('Email not sent: Mail driver is set to "log". Configure MAIL_MAILER in .env file to actually send emails (e.g., smtp, mailgun, etc.)');
+                } else {
+                    Mail::to(['info@spiceloop.com', 'spiceloop2@gmail.com'])->send(new NewOrderNotification($order));
+                    \Log::info('Order notification email sent successfully for order #' . $order->id);
+                }
             } catch (\Exception $e) {
                 // Log the error but don't fail the order creation
-                \Log::error('Failed to send order notification email: ' . $e->getMessage());
+                \Log::error('Failed to send order notification email for order #' . $order->id . ': ' . $e->getMessage(), [
+                    'exception' => $e,
+                    'trace' => $e->getTraceAsString()
+                ]);
             }
 
             // Send SMS notification

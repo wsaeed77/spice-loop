@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CateringController as AdminCateringController;
 use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\CostCalculatorController;
 use App\Http\Controllers\Admin\MenuItemCalculatorController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\WeeklyMenuController;
 use App\Http\Controllers\SpecialOrderController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CateringController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
@@ -84,6 +86,8 @@ Route::get('/subscription', [SubscriptionController::class, 'index'])->name('sub
 Route::post('/subscription', [SubscriptionController::class, 'store'])->name('subscription.store');
 Route::get('/catering', [CateringController::class, 'index'])->name('catering');
 Route::post('/catering', [CateringController::class, 'store'])->name('catering.store');
+Route::get('/contact-subscription', [ContactController::class, 'index'])->name('contact-subscription');
+Route::post('/contact-subscription', [ContactController::class, 'store'])->name('contact-subscription.store');
 
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -146,4 +150,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/subscription-requests', [SubscriptionRequestController::class, 'index'])->name('subscription-requests.index');
     Route::get('/subscription-requests/{id}', [SubscriptionRequestController::class, 'show'])->name('subscription-requests.show');
     Route::patch('/subscription-requests/{id}/status', [SubscriptionRequestController::class, 'updateStatus'])->name('subscription-requests.update-status');
+    
+    // Contacts Management
+    Route::resource('contacts', ContactController::class);
 });

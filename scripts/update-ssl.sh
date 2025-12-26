@@ -15,7 +15,7 @@ print_status() { echo -e "${GREEN}[✓]${NC} $1"; }
 print_error() { echo -e "${RED}[✗]${NC} $1"; }
 print_warning() { echo -e "${YELLOW}[!]${NC} $1"; }
 
-if [ "$EUID" -ne 0 ]; then 
+if [ "$EUID" -ne 0 ]; then
     print_error "Please run as root (use sudo)"
     exit 1
 fi
@@ -60,6 +60,7 @@ case $ACTION in
         exit 1
         ;;
 esac
+
 
 
 
