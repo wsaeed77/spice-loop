@@ -75,4 +75,16 @@ class OrderController extends Controller
 
         return redirect()->back()->with('message', 'Order status updated successfully!');
     }
+
+    public function destroy($id)
+    {
+        $order = Order::findOrFail($id);
+        $orderId = $order->id;
+        
+        // Order items will be deleted automatically due to cascade
+        $order->delete();
+
+        return redirect()->route('admin.orders.index')
+            ->with('message', "Order #{$orderId} has been deleted successfully!");
+    }
 }
