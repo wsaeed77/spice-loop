@@ -1,7 +1,18 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import Layout from '../../../Components/Layout';
 
 export default function OrdersIndex({ auth, orders, flash }) {
+    const [deletingOrderId, setDeletingOrderId] = useState(null);
+
+    const handleDelete = (orderId) => {
+        if (window.confirm(`Are you sure you want to delete Order #${orderId}? This action cannot be undone.`)) {
+            setDeletingOrderId(orderId);
+            router.delete(`/admin/orders/${orderId}`, {
+                onFinish: () => setDeletingOrderId(null),
+            });
+        }
+    };
     const getStatusColor = (status) => {
         const colors = {
             pending: 'bg-yellow-100 text-yellow-800',
@@ -86,12 +97,21 @@ export default function OrdersIndex({ auth, orders, flash }) {
                                                 {formatDate(order.created_at)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <Link
-                                                    href={`/admin/orders/${order.id}`}
-                                                    className="text-spice-orange hover:text-spice-maroon"
-                                                >
-                                                    View Details
-                                                </Link>
+                                                <div className="flex items-center space-x-4">
+                                                    <Link
+                                                        href={`/admin/orders/${order.id}`}
+                                                        className="text-spice-orange hover:text-spice-maroon"
+                                                    >
+                                                        View Details
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleDelete(order.id)}
+                                                        disabled={deletingOrderId === order.id}
+                                                        className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {deletingOrderId === order.id ? 'Deleting...' : 'Delete'}
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
