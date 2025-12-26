@@ -3,7 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CateringController as AdminCateringController;
 use App\Http\Controllers\Admin\CityController;
-use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\CostCalculatorController;
 use App\Http\Controllers\Admin\MenuItemCalculatorController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
@@ -153,5 +153,5 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('/subscription-requests/{id}/status', [SubscriptionRequestController::class, 'updateStatus'])->name('subscription-requests.update-status');
     
     // Contacts Management
-    Route::resource('contacts', ContactController::class);
+    Route::resource('contacts', AdminContactController::class);
 });

@@ -34,7 +34,7 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                 </div>
 
                 {/* Quick Links */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     <Link href="/admin/menu" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Manage Menu</h3>
                         <p className="text-gray-600">Add, edit, or remove menu items</p>
@@ -43,9 +43,17 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Manage Orders</h3>
                         <p className="text-gray-600">View and update order status</p>
                     </Link>
+                    <Link href="/admin/contacts" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
+                        <h3 className="text-xl font-bold text-spice-maroon mb-2">Manage Contacts</h3>
+                        <p className="text-gray-600">View, add, and edit customer contacts</p>
+                    </Link>
                     <Link href="/admin/weekly-menu" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Weekly Menu</h3>
                         <p className="text-gray-600">Set weekly subscription menu</p>
+                    </Link>
+                    <Link href="/admin/catering" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
+                        <h3 className="text-xl font-bold text-spice-maroon mb-2">Catering Requests</h3>
+                        <p className="text-gray-600">View and manage catering requests</p>
                     </Link>
                     <Link href="/admin/settings" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Settings</h3>
