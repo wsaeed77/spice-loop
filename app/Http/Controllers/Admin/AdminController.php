@@ -47,6 +47,7 @@ class AdminController extends Controller
     {
         return Inertia::render('Admin/QRCode', [
             'websiteUrl' => 'https://www.spiceloop.com',
+            'contactSubscriptionUrl' => 'https://spiceloop.com/contact-subscription',
         ]);
     }
 }
