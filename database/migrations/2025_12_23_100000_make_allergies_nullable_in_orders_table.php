@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('orders') && !Schema::hasColumn('orders', 'delivery_charge')) {
+        if (Schema::hasTable('orders') && Schema::hasColumn('orders', 'allergies')) {
             Schema::table('orders', function (Blueprint $table) {
-                $table->decimal('delivery_charge', 10, 2)->default(0)->after('total_amount');
+                $table->text('allergies')->nullable()->change();
             });
         }
     }
@@ -23,12 +23,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('delivery_charge');
-        });
+        if (Schema::hasTable('orders') && Schema::hasColumn('orders', 'allergies')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->text('allergies')->nullable(false)->change();
+            });
+        }
     }
 };
-
-
-
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\NewOrderNotification;
 use App\Services\SmsService;
 use App\Models\City;
+use App\Models\Contact;
 use App\Models\MenuItem;
 use App\Models\MenuItemOption;
 use App\Models\Order;
@@ -111,6 +112,23 @@ class OrderController extends Controller
             }
 
             DB::commit();
+
+            // Create or update contact with existing customer flag
+            try {
+                Contact::updateOrCreate(
+                    ['phone' => $validated['customer_phone']],
+                    [
+                        'name' => $validated['customer_name'],
+                        'email' => $validated['customer_email'] ?? null,
+                        'address' => $validated['customer_address'],
+                        'postcode' => $validated['customer_postcode'],
+                        'is_existing_customer' => true,
+                    ]
+                );
+            } catch (\Exception $e) {
+                // Log the error but don't fail the order creation
+                \Log::error('Failed to create/update contact for order #' . $order->id . ': ' . $e->getMessage());
+            }
 
             // Refresh order and load relationships for email
             $order->refresh();

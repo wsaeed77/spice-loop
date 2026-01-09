@@ -1,28 +1,80 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import Layout from '../../../Components/Layout';
 
-export default function OrderShow({ auth, order, flash }) {
-    const { data, setData, patch, processing } = useForm({
+export default function OrderShow({ auth, order, cities, menuItems, flash }) {
+    const [editMode, setEditMode] = useState(false);
+    const [showAddItemModal, setShowAddItemModal] = useState(false);
+    const [removingItemId, setRemovingItemId] = useState(null);
+
+    const statusForm = useForm({
         status: order?.status || 'pending',
+    });
+
+    const orderForm = useForm({
+        customer_address: order?.customer_address || '',
+        customer_postcode: order?.customer_postcode || '',
+        delivery_date: order?.delivery_date || '',
+        delivery_time: order?.delivery_time || '',
+        delivery_charge: order?.delivery_charge || 0,
+    });
+
+    const addItemForm = useForm({
+        menu_item_id: '',
+        menu_item_option_id: '',
+        quantity: 1,
     });
 
     const handleStatusUpdate = (e) => {
         e.preventDefault();
-        patch(`/admin/orders/${order.id}/status`, {
+        statusForm.patch(`/admin/orders/${order.id}/status`, {
             preserveScroll: true,
         });
     };
 
+    const handleOrderUpdate = (e) => {
+        e.preventDefault();
+        orderForm.patch(`/admin/orders/${order.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditMode(false);
+            },
+        });
+    };
+
+    const handleAddItem = (e) => {
+        e.preventDefault();
+        addItemForm.post(`/admin/orders/${order.id}/items`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowAddItemModal(false);
+                addItemForm.reset();
+            },
+        });
+    };
+
+    const handleRemoveItem = (itemId) => {
+        if (window.confirm('Are you sure you want to remove this item from the order?')) {
+            setRemovingItemId(itemId);
+            router.delete(`/admin/orders/${order.id}/items/${itemId}`, {
+                preserveScroll: true,
+                onFinish: () => setRemovingItemId(null),
+            });
+        }
+    };
+
     const getStatusColor = (status) => {
         const colors = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            confirmed: 'bg-blue-100 text-blue-800',
-            preparing: 'bg-purple-100 text-purple-800',
-            ready: 'bg-green-100 text-green-800',
-            delivered: 'bg-gray-100 text-gray-800',
-            cancelled: 'bg-red-100 text-red-800',
+            'pending': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+            'In Queue': 'bg-blue-100 text-blue-800 border-blue-300',
+            'confirmed': 'bg-blue-100 text-blue-800 border-blue-300',
+            'preparing': 'bg-purple-100 text-purple-800 border-purple-300',
+            'ready': 'bg-green-100 text-green-800 border-green-300',
+            'out for delivery': 'bg-orange-100 text-orange-800 border-orange-300',
+            'delivered': 'bg-gray-100 text-gray-800 border-gray-300',
+            'cancelled': 'bg-red-100 text-red-800 border-red-300',
         };
-        return colors[status] || 'bg-gray-100 text-gray-800';
+        return colors[status] || 'bg-gray-100 text-gray-800 border-gray-300';
     };
 
     const formatDate = (dateString) => {
@@ -38,9 +90,11 @@ export default function OrderShow({ auth, order, flash }) {
 
     const statusOptions = [
         { value: 'pending', label: 'Pending' },
+        { value: 'In Queue', label: 'In Queue' },
         { value: 'confirmed', label: 'Confirmed' },
         { value: 'preparing', label: 'Preparing' },
         { value: 'ready', label: 'Ready' },
+        { value: 'out for delivery', label: 'Out for Delivery' },
         { value: 'delivered', label: 'Delivered' },
         { value: 'cancelled', label: 'Cancelled' },
     ];
@@ -85,12 +139,20 @@ export default function OrderShow({ auth, order, flash }) {
                     <div className="lg:col-span-2 space-y-6">
                         {/* Order Items */}
                         <div className="bg-white rounded-lg shadow-md p-6 border border-spice-orange">
-                            <h2 className="text-2xl font-bold text-spice-maroon mb-4">Order Items</h2>
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-2xl font-bold text-spice-maroon">Order Items</h2>
+                                <button
+                                    onClick={() => setShowAddItemModal(true)}
+                                    className="bg-spice-orange hover:bg-spice-gold text-white px-4 py-2 rounded-lg font-semibold transition text-sm"
+                                >
+                                    + Add Item
+                                </button>
+                            </div>
                             {order.orderItems && order.orderItems.length > 0 ? (
                                 <div className="space-y-4">
                                     {order.orderItems.map((item) => (
                                         <div key={item.id} className="flex justify-between items-center border-b pb-4 last:border-0">
-                                            <div>
+                                            <div className="flex-1">
                                                 <p className="font-semibold text-gray-900">
                                                     {item.menuItem?.name || 'Unknown Item'}
                                                 </p>
@@ -98,9 +160,18 @@ export default function OrderShow({ auth, order, flash }) {
                                                     Quantity: {item.quantity} × £{parseFloat(item.price).toFixed(2)}
                                                 </p>
                                             </div>
-                                            <p className="font-semibold text-gray-900">
-                                                £{(parseFloat(item.quantity) * parseFloat(item.price)).toFixed(2)}
-                                            </p>
+                                            <div className="flex items-center gap-4">
+                                                <p className="font-semibold text-gray-900">
+                                                    £{(parseFloat(item.quantity) * parseFloat(item.price)).toFixed(2)}
+                                                </p>
+                                                <button
+                                                    onClick={() => handleRemoveItem(item.id)}
+                                                    disabled={removingItemId === item.id}
+                                                    className="text-red-600 hover:text-red-800 disabled:opacity-50 text-sm"
+                                                >
+                                                    {removingItemId === item.id ? 'Removing...' : 'Remove'}
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                     <div className="flex justify-between items-center pt-4 border-t-2 border-spice-orange">
@@ -117,7 +188,36 @@ export default function OrderShow({ auth, order, flash }) {
 
                         {/* Customer Information */}
                         <div className="bg-white rounded-lg shadow-md p-6 border border-spice-orange">
-                            <h2 className="text-2xl font-bold text-spice-maroon mb-4">Customer Information</h2>
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-2xl font-bold text-spice-maroon">Order Details</h2>
+                                {!editMode ? (
+                                    <button
+                                        onClick={() => setEditMode(true)}
+                                        className="bg-spice-orange hover:bg-spice-gold text-white px-4 py-2 rounded-lg font-semibold transition text-sm"
+                                    >
+                                        Edit
+                                    </button>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => {
+                                                setEditMode(false);
+                                                orderForm.reset();
+                                            }}
+                                            className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition text-sm"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleOrderUpdate}
+                                            disabled={orderForm.processing}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm disabled:opacity-50"
+                                        >
+                                            {orderForm.processing ? 'Saving...' : 'Save'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                             <div className="space-y-3">
                                 <div>
                                     <p className="text-sm text-gray-500">Name</p>
@@ -125,7 +225,7 @@ export default function OrderShow({ auth, order, flash }) {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Email</p>
-                                    <p className="font-semibold text-gray-900">{order.customer_email}</p>
+                                    <p className="font-semibold text-gray-900">{order.customer_email || 'N/A'}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Phone</p>
@@ -133,12 +233,69 @@ export default function OrderShow({ auth, order, flash }) {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Address</p>
-                                    <p className="font-semibold text-gray-900">{order.customer_address}</p>
+                                    {editMode ? (
+                                        <textarea
+                                            value={orderForm.data.customer_address}
+                                            onChange={(e) => orderForm.setData('customer_address', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                                            rows="3"
+                                        />
+                                    ) : (
+                                        <p className="font-semibold text-gray-900">{order.customer_address}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Postcode</p>
+                                    {editMode ? (
+                                        <input
+                                            type="text"
+                                            value={orderForm.data.customer_postcode || ''}
+                                            onChange={(e) => orderForm.setData('customer_postcode', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                                        />
+                                    ) : (
+                                        <p className="font-semibold text-gray-900">{order.customer_postcode || 'N/A'}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Delivery Date</p>
+                                    {editMode ? (
+                                        <input
+                                            type="date"
+                                            value={orderForm.data.delivery_date || ''}
+                                            onChange={(e) => orderForm.setData('delivery_date', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                                            min={new Date().toISOString().split('T')[0]}
+                                        />
+                                    ) : (
+                                        <p className="font-semibold text-gray-900">
+                                            {order.delivery_date ? new Date(order.delivery_date).toLocaleDateString('en-GB') : 'N/A'}
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Delivery Time</p>
+                                    {editMode ? (
+                                        <input
+                                            type="time"
+                                            value={orderForm.data.delivery_time || ''}
+                                            onChange={(e) => orderForm.setData('delivery_time', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                                        />
+                                    ) : (
+                                        <p className="font-semibold text-gray-900">{order.delivery_time || 'N/A'}</p>
+                                    )}
                                 </div>
                                 {order.city && (
                                     <div>
                                         <p className="text-sm text-gray-500">City</p>
                                         <p className="font-semibold text-gray-900">{order.city.name}</p>
+                                    </div>
+                                )}
+                                {order.allergies && (
+                                    <div>
+                                        <p className="text-sm text-gray-500">Allergies</p>
+                                        <p className="font-semibold text-gray-900">{order.allergies}</p>
                                     </div>
                                 )}
                                 {order.notes && (
@@ -163,8 +320,8 @@ export default function OrderShow({ auth, order, flash }) {
                                     </label>
                                     <select
                                         id="status"
-                                        value={data.status}
-                                        onChange={(e) => setData('status', e.target.value)}
+                                        value={statusForm.data.status}
+                                        onChange={(e) => statusForm.setData('status', e.target.value)}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-spice-orange focus:border-spice-orange"
                                     >
                                         {statusOptions.map((option) => (
@@ -176,16 +333,16 @@ export default function OrderShow({ auth, order, flash }) {
                                 </div>
                                 <button
                                     type="submit"
-                                    disabled={processing}
+                                    disabled={statusForm.processing}
                                     className="w-full px-6 py-2 bg-spice-orange hover:bg-spice-gold text-white rounded-lg font-semibold transition disabled:opacity-50"
                                 >
-                                    {processing ? 'Updating...' : 'Update Status'}
+                                    {statusForm.processing ? 'Updating...' : 'Update Status'}
                                 </button>
                             </form>
                             <div className="mt-4">
                                 <p className="text-sm text-gray-500 mb-2">Current Status:</p>
-                                <span className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                <span className={`px-3 py-1 text-sm font-semibold rounded-full border ${getStatusColor(order.status)}`}>
+                                    {order.status}
                                 </span>
                             </div>
                         </div>
@@ -214,6 +371,95 @@ export default function OrderShow({ auth, order, flash }) {
                         </div>
                     </div>
                 </div>
+
+                {/* Add Item Modal */}
+                {showAddItemModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+                            <h3 className="text-2xl font-bold text-spice-maroon mb-4">Add Menu Item</h3>
+                            <form onSubmit={handleAddItem} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Menu Item
+                                    </label>
+                                    <select
+                                        value={addItemForm.data.menu_item_id}
+                                        onChange={(e) => {
+                                            addItemForm.setData('menu_item_id', e.target.value);
+                                            addItemForm.setData('menu_item_option_id', '');
+                                        }}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                        required
+                                    >
+                                        <option value="">Select an item</option>
+                                        {menuItems && menuItems.map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.name} - £{parseFloat(item.price).toFixed(2)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {addItemForm.data.menu_item_id && (() => {
+                                    const selectedItem = menuItems?.find(item => item.id == addItemForm.data.menu_item_id);
+                                    return selectedItem?.options && selectedItem.options.length > 0 ? (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Variant (Optional)
+                                            </label>
+                                            <select
+                                                value={addItemForm.data.menu_item_option_id || ''}
+                                                onChange={(e) => addItemForm.setData('menu_item_option_id', e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                            >
+                                                <option value="">Default - £{parseFloat(selectedItem.price).toFixed(2)}</option>
+                                                {selectedItem.options.map((option) => (
+                                                    <option key={option.id} value={option.id}>
+                                                        {option.name} - £{parseFloat(option.price).toFixed(2)}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ) : null;
+                                })()}
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Quantity
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={addItemForm.data.quantity}
+                                        onChange={(e) => addItemForm.setData('quantity', parseInt(e.target.value) || 1)}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowAddItemModal(false);
+                                            addItemForm.reset();
+                                        }}
+                                        className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={addItemForm.processing}
+                                        className="flex-1 bg-spice-orange hover:bg-spice-gold text-white px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50"
+                                    >
+                                        {addItemForm.processing ? 'Adding...' : 'Add Item'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
         </Layout>
     );

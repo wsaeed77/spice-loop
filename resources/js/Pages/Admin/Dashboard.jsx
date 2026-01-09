@@ -43,6 +43,10 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Manage Orders</h3>
                         <p className="text-gray-600">View and update order status</p>
                     </Link>
+                    <Link href="/admin/orders-queue" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
+                        <h3 className="text-xl font-bold text-spice-maroon mb-2">Order Queue</h3>
+                        <p className="text-gray-600">View orders in queue with real-time alerts</p>
+                    </Link>
                     <Link href="/admin/contacts" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Manage Contacts</h3>
                         <p className="text-gray-600">View, add, and edit customer contacts</p>

@@ -2,7 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import Layout from '../Components/Layout';
 
 export default function ContactSubscription({ auth, flash }) {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         phone: '',
         name: '',
         address: '',
@@ -12,7 +12,12 @@ export default function ContactSubscription({ auth, flash }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/contact-subscription');
+        post('/contact-subscription', {
+            onSuccess: () => {
+                // Clear the form after successful submission
+                reset();
+            },
+        });
     };
 
     return (

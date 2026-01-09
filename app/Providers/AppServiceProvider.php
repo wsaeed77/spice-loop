@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Schedule;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Schedule the order status update command to run every 5 minutes
+        Schedule::command('orders:update-statuses')
+            ->everyFiveMinutes()
+            ->withoutOverlapping();
     }
 }

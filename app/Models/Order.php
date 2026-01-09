@@ -22,11 +22,14 @@ class Order extends Model
         'customer_postcode',
         'allergies',
         'notes',
+        'delivery_date',
+        'delivery_time',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'delivery_charge' => 'decimal:2',
+        'delivery_date' => 'date',
     ];
 
     public function user()

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CostCalculatorController;
 use App\Http\Controllers\Admin\MenuItemCalculatorController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\OrderQueueController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SpecialOrderController as AdminSpecialOrderController;
 use App\Http\Controllers\Admin\SubscriptionRequestController;
@@ -110,9 +111,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Orders Management
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/create', [AdminOrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [AdminOrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::post('/orders/{order}/items', [AdminOrderController::class, 'addMenuItem'])->name('orders.add-item');
+    Route::delete('/orders/{order}/items/{item}', [AdminOrderController::class, 'removeMenuItem'])->name('orders.remove-item');
     Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
+    
+    // Order Queue Dashboard
+    Route::get('/orders-queue', [OrderQueueController::class, 'index'])->name('orders.queue');
     
     // Catering Management
     Route::get('/catering', [AdminCateringController::class, 'index'])->name('catering.index');
