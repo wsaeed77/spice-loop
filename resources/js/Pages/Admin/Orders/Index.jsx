@@ -5,8 +5,9 @@ import Layout from '../../../Components/Layout';
 export default function OrdersIndex({ auth, orders, flash }) {
     const [deletingOrderId, setDeletingOrderId] = useState(null);
 
-    const handleDelete = (orderId) => {
-        if (window.confirm(`Are you sure you want to delete Order #${orderId}? This action cannot be undone.`)) {
+    const handleDelete = (orderId, dailyOrderNumber) => {
+        const displayNumber = dailyOrderNumber || orderId;
+        if (window.confirm(`Are you sure you want to delete Order #${displayNumber}? This action cannot be undone.`)) {
             setDeletingOrderId(orderId);
             router.delete(`/admin/orders/${orderId}`, {
                 onFinish: () => setDeletingOrderId(null),
@@ -62,7 +63,7 @@ export default function OrdersIndex({ auth, orders, flash }) {
                         <table className="min-w-full">
                             <thead className="bg-spice-cream">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Order ID</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Order Number</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Customer</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">City</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Total</th>
@@ -76,7 +77,7 @@ export default function OrdersIndex({ auth, orders, flash }) {
                                     orders.data.map((order) => (
                                         <tr key={order.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                #{order.id}
+                                                #{order.daily_order_number || order.id}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900">{order.customer_name}</div>
@@ -105,7 +106,7 @@ export default function OrdersIndex({ auth, orders, flash }) {
                                                         View Details
                                                     </Link>
                                                     <button
-                                                        onClick={() => handleDelete(order.id)}
+                                                        onClick={() => handleDelete(order.id, order.daily_order_number)}
                                                         disabled={deletingOrderId === order.id}
                                                         className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >

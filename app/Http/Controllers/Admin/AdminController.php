@@ -25,7 +25,30 @@ class AdminController extends Controller
         $recentOrders = Order::with(['city', 'orderItems.menuItem'])
             ->latest()
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'daily_order_number' => $this->getDailyOrderNumber($order),
+                    'customer_name' => $order->customer_name,
+                    'total_amount' => $order->total_amount,
+                    'status' => $order->status,
+                    'created_at' => $order->created_at,
+                    'city' => $order->city ? [
+                        'id' => $order->city->id,
+                        'name' => $order->city->name,
+                    ] : null,
+                    'orderItems' => $order->orderItems->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'menuItem' => $item->menuItem ? [
+                                'id' => $item->menuItem->id,
+                                'name' => $item->menuItem->name,
+                            ] : null,
+                        ];
+                    }),
+                ];
+            });
 
         $recentCatering = CateringRequest::latest()
             ->limit(10)
@@ -49,5 +72,24 @@ class AdminController extends Controller
             'websiteUrl' => 'https://www.spiceloop.com',
             'contactSubscriptionUrl' => 'https://spiceloop.com/contact-subscription',
         ]);
+    }
+
+    /**
+     * Calculate daily order number (resets each day)
+     */
+    private function getDailyOrderNumber($order)
+    {
+        $orderDate = \Carbon\Carbon::parse($order->created_at)->startOfDay();
+        $dailyOrderNumber = Order::whereDate('created_at', $orderDate->format('Y-m-d'))
+            ->where(function($query) use ($order) {
+                $query->where('created_at', '<', $order->created_at)
+                    ->orWhere(function($q) use ($order) {
+                        $q->where('created_at', $order->created_at)
+                          ->where('id', '<=', $order->id);
+                    });
+            })
+            ->count();
+        
+        return $dailyOrderNumber;
     }
 }

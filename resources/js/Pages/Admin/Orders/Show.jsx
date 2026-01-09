@@ -5,6 +5,7 @@ import Layout from '../../../Components/Layout';
 export default function OrderShow({ auth, order, cities, menuItems, flash }) {
     const [editMode, setEditMode] = useState(false);
     const [showAddItemModal, setShowAddItemModal] = useState(false);
+    const [addItemType, setAddItemType] = useState('menu'); // 'menu' or 'custom'
     const [removingItemId, setRemovingItemId] = useState(null);
 
     const statusForm = useForm({
@@ -16,12 +17,15 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
         customer_postcode: order?.customer_postcode || '',
         delivery_date: order?.delivery_date || '',
         delivery_time: order?.delivery_time || '',
+        delivery_distance: order?.delivery_distance || '',
         delivery_charge: order?.delivery_charge || 0,
     });
 
     const addItemForm = useForm({
         menu_item_id: '',
         menu_item_option_id: '',
+        custom_item_name: '',
+        price: '',
         quantity: 1,
     });
 
@@ -44,10 +48,28 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
 
     const handleAddItem = (e) => {
         e.preventDefault();
-        addItemForm.post(`/admin/orders/${order.id}/items`, {
+        // Ensure the form data is properly structured based on item type
+        const formData = {
+            ...addItemForm.data,
+            quantity: parseInt(addItemForm.data.quantity) || 1,
+        };
+        
+        // If custom item, ensure menu_item_id is null
+        if (addItemType === 'custom') {
+            formData.menu_item_id = null;
+            formData.menu_item_option_id = null;
+            formData.price = parseFloat(formData.price) || 0;
+        } else {
+            // If menu item, ensure custom fields are null
+            formData.custom_item_name = null;
+            formData.price = null;
+        }
+        
+        addItemForm.transform(() => formData).post(`/admin/orders/${order.id}/items`, {
             preserveScroll: true,
             onSuccess: () => {
                 setShowAddItemModal(false);
+                setAddItemType('menu');
                 addItemForm.reset();
             },
         });
@@ -105,8 +127,8 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                 <Head title="Order Not Found - SpiceLoop" />
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <p className="text-gray-500">Order not found.</p>
-                    <Link href="/admin/orders" className="text-spice-orange hover:text-spice-maroon">
-                        ← Back to Orders
+                    <Link href="/admin/orders-queue" className="text-spice-orange hover:text-spice-maroon">
+                        ← Back to Orders Queue
                     </Link>
                 </div>
             </Layout>
@@ -115,16 +137,16 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
 
     return (
         <Layout auth={auth}>
-            <Head title={`Order #${order.id} - SpiceLoop`} />
+            <Head title={`Order #${order.daily_order_number || order.id} - SpiceLoop`} />
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-spice-maroon mb-2">Order #{order.id}</h1>
+                    <h1 className="text-4xl font-bold text-spice-maroon mb-2">Order #{order.daily_order_number || order.id}</h1>
                     <Link
-                        href="/admin/orders"
+                        href="/admin/orders-queue"
                         className="text-spice-orange hover:text-spice-maroon"
                     >
-                        ← Back to Orders
+                        ← Back to Orders Queue
                     </Link>
                 </div>
 
@@ -154,8 +176,13 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                                         <div key={item.id} className="flex justify-between items-center border-b pb-4 last:border-0">
                                             <div className="flex-1">
                                                 <p className="font-semibold text-gray-900">
-                                                    {item.menuItem?.name || 'Unknown Item'}
+                                                    {item.is_custom || item.custom_item_name 
+                                                        ? item.custom_item_name || 'Custom Item'
+                                                        : (item.menuItem?.name || 'Unknown Item')}
                                                 </p>
+                                                {(item.is_custom || item.custom_item_name) && (
+                                                    <p className="text-xs text-blue-600">Custom Item</p>
+                                                )}
                                                 <p className="text-sm text-gray-500">
                                                     Quantity: {item.quantity} × £{parseFloat(item.price).toFixed(2)}
                                                 </p>
@@ -286,6 +313,24 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                                         <p className="font-semibold text-gray-900">{order.delivery_time || 'N/A'}</p>
                                     )}
                                 </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Delivery Distance (miles/km)</p>
+                                    {editMode ? (
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={orderForm.data.delivery_distance || ''}
+                                            onChange={(e) => orderForm.setData('delivery_distance', parseFloat(e.target.value) || '')}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                                            placeholder="e.g., 5.5"
+                                        />
+                                    ) : (
+                                        <p className="font-semibold text-gray-900">
+                                            {order.delivery_distance ? `${order.delivery_distance} miles/km` : 'N/A'}
+                                        </p>
+                                    )}
+                                </div>
                                 {order.city && (
                                     <div>
                                         <p className="text-sm text-gray-500">City</p>
@@ -352,8 +397,8 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                             <h2 className="text-2xl font-bold text-spice-maroon mb-4">Order Information</h2>
                             <div className="space-y-3">
                                 <div>
-                                    <p className="text-sm text-gray-500">Order ID</p>
-                                    <p className="font-semibold text-gray-900">#{order.id}</p>
+                                    <p className="text-sm text-gray-500">Order Number</p>
+                                    <p className="font-semibold text-gray-900">#{order.daily_order_number || order.id}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Order Date</p>
@@ -376,56 +421,126 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                 {showAddItemModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-                            <h3 className="text-2xl font-bold text-spice-maroon mb-4">Add Menu Item</h3>
-                            <form onSubmit={handleAddItem} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Menu Item
-                                    </label>
-                                    <select
-                                        value={addItemForm.data.menu_item_id}
-                                        onChange={(e) => {
-                                            addItemForm.setData('menu_item_id', e.target.value);
-                                            addItemForm.setData('menu_item_option_id', '');
-                                        }}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                                        required
-                                    >
-                                        <option value="">Select an item</option>
-                                        {menuItems && menuItems.map((item) => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.name} - £{parseFloat(item.price).toFixed(2)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                            <h3 className="text-2xl font-bold text-spice-maroon mb-4">Add Item</h3>
+                            
+                            {/* Item Type Tabs */}
+                            <div className="flex gap-2 mb-4 border-b border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={() => setAddItemType('menu')}
+                                    className={`flex-1 py-2 px-4 font-semibold transition ${
+                                        addItemType === 'menu'
+                                            ? 'text-spice-orange border-b-2 border-spice-orange'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                                >
+                                    Menu Item
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setAddItemType('custom')}
+                                    className={`flex-1 py-2 px-4 font-semibold transition ${
+                                        addItemType === 'custom'
+                                            ? 'text-spice-orange border-b-2 border-spice-orange'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                                >
+                                    Custom Item
+                                </button>
+                            </div>
 
-                                {addItemForm.data.menu_item_id && (() => {
-                                    const selectedItem = menuItems?.find(item => item.id == addItemForm.data.menu_item_id);
-                                    return selectedItem?.options && selectedItem.options.length > 0 ? (
+                            <form onSubmit={handleAddItem} className="space-y-4">
+                                {addItemType === 'menu' ? (
+                                    <>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Variant (Optional)
+                                                Menu Item *
                                             </label>
                                             <select
-                                                value={addItemForm.data.menu_item_option_id || ''}
-                                                onChange={(e) => addItemForm.setData('menu_item_option_id', e.target.value)}
+                                                value={addItemForm.data.menu_item_id}
+                                                onChange={(e) => {
+                                                    addItemForm.setData('menu_item_id', e.target.value);
+                                                    addItemForm.setData('menu_item_option_id', '');
+                                                    addItemForm.setData('custom_item_name', '');
+                                                    addItemForm.setData('price', '');
+                                                }}
                                                 className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                                required={addItemType === 'menu'}
                                             >
-                                                <option value="">Default - £{parseFloat(selectedItem.price).toFixed(2)}</option>
-                                                {selectedItem.options.map((option) => (
-                                                    <option key={option.id} value={option.id}>
-                                                        {option.name} - £{parseFloat(option.price).toFixed(2)}
+                                                <option value="">Select an item</option>
+                                                {menuItems && menuItems.map((item) => (
+                                                    <option key={item.id} value={item.id}>
+                                                        {item.name} - £{parseFloat(item.price).toFixed(2)}
                                                     </option>
                                                 ))}
                                             </select>
                                         </div>
-                                    ) : null;
-                                })()}
+
+                                        {addItemForm.data.menu_item_id && (() => {
+                                            const selectedItem = menuItems?.find(item => item.id == addItemForm.data.menu_item_id);
+                                            return selectedItem?.options && selectedItem.options.length > 0 ? (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Variant (Optional)
+                                                    </label>
+                                                    <select
+                                                        value={addItemForm.data.menu_item_option_id || ''}
+                                                        onChange={(e) => addItemForm.setData('menu_item_option_id', e.target.value)}
+                                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                                    >
+                                                        <option value="">Default - £{parseFloat(selectedItem.price).toFixed(2)}</option>
+                                                        {selectedItem.options.map((option) => (
+                                                            <option key={option.id} value={option.id}>
+                                                                {option.name} - £{parseFloat(option.price).toFixed(2)}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            ) : null;
+                                        })()}
+                                    </>
+                                ) : (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Item Name / Title *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={addItemForm.data.custom_item_name}
+                                                onChange={(e) => {
+                                                    addItemForm.setData('custom_item_name', e.target.value);
+                                                    addItemForm.setData('menu_item_id', '');
+                                                    addItemForm.setData('menu_item_option_id', '');
+                                                }}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                                placeholder="e.g., Special Curry"
+                                                required={addItemType === 'custom'}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Price *
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={addItemForm.data.price}
+                                                onChange={(e) => {
+                                                    addItemForm.setData('price', e.target.value);
+                                                }}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                                placeholder="e.g., 15.99"
+                                                required={addItemType === 'custom'}
+                                            />
+                                        </div>
+                                    </>
+                                )}
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Quantity
+                                        Quantity *
                                     </label>
                                     <input
                                         type="number"
@@ -442,6 +557,7 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                                         type="button"
                                         onClick={() => {
                                             setShowAddItemModal(false);
+                                            setAddItemType('menu');
                                             addItemForm.reset();
                                         }}
                                         className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition"
@@ -450,8 +566,8 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={addItemForm.processing}
-                                        className="flex-1 bg-spice-orange hover:bg-spice-gold text-white px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50"
+                                        disabled={addItemForm.processing || (addItemType === 'menu' && !addItemForm.data.menu_item_id) || (addItemType === 'custom' && (!addItemForm.data.custom_item_name || !addItemForm.data.price))}
+                                        className="flex-1 bg-spice-orange hover:bg-spice-gold text-white px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {addItemForm.processing ? 'Adding...' : 'Add Item'}
                                     </button>

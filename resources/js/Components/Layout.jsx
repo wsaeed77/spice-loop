@@ -154,16 +154,27 @@ export default function Layout({ children, auth }) {
                             {auth?.user ? (
                                 <div className="flex items-center space-x-4">
                                     {auth.user.roles?.some(r => r.name === 'admin') ? (
-                                        <Link href="/admin/dashboard" className="text-gray-500 hover:text-spice-maroon">
-                                            Admin
-                                        </Link>
+                                        <>
+                                            <Link 
+                                                href="/admin/orders-queue" 
+                                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                                </svg>
+                                                Order Queue
+                                            </Link>
+                                            <Link href="/admin/dashboard" className="text-gray-500 hover:text-spice-maroon">
+                                                Admin
+                                            </Link>
+                                        </>
                                     ) : (
                                         <Link href="/subscriber/dashboard" className="text-gray-500 hover:text-spice-maroon">
                                             Dashboard
                                         </Link>
                                     )}
                                     <button 
-                                        onClick={() => router.post(route('logout'))}
+                                        onClick={() => router.post('/logout')}
                                         className="text-gray-500 hover:text-spice-maroon"
                                     >
                                         Logout
@@ -250,13 +261,27 @@ export default function Layout({ children, auth }) {
                                 {auth?.user ? (
                                     <>
                                         {auth.user.roles?.some(r => r.name === 'admin') ? (
-                                            <Link
-                                                href="/admin/dashboard"
-                                                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
-                                                onClick={() => setMobileMenuOpen(false)}
-                                            >
-                                                Admin
-                                            </Link>
+                                            <>
+                                                <Link
+                                                    href="/admin/orders-queue"
+                                                    className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white hover:bg-blue-700 mb-2 text-center font-semibold"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                >
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                                        </svg>
+                                                        Order Queue
+                                                    </div>
+                                                </Link>
+                                                <Link
+                                                    href="/admin/dashboard"
+                                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                >
+                                                    Admin
+                                                </Link>
+                                            </>
                                         ) : (
                                             <Link
                                                 href="/subscriber/dashboard"
@@ -269,7 +294,7 @@ export default function Layout({ children, auth }) {
                                         <button
                                             onClick={() => {
                                                 setMobileMenuOpen(false);
-                                                router.post(route('logout'));
+                                                router.post('/logout');
                                             }}
                                             className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-spice-maroon hover:bg-gray-50"
                                         >

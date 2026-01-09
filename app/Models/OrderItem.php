@@ -15,6 +15,7 @@ class OrderItem extends Model
         'menu_item_option_id',
         'quantity',
         'price',
+        'custom_item_name',
     ];
 
     protected $casts = [

@@ -19,6 +19,12 @@ class OrderController extends Controller
             ->latest()
             ->paginate(20);
 
+        // Transform paginated data to include daily order numbers
+        $orders->getCollection()->transform(function ($order) {
+            $order->daily_order_number = $this->getDailyOrderNumber($order);
+            return $order;
+        });
+
         return Inertia::render('Admin/Orders/Index', [
             'orders' => $orders,
         ]);
@@ -49,12 +55,15 @@ class OrderController extends Controller
             'customer_postcode' => 'nullable|string|max:20',
             'delivery_date' => 'required|date|after_or_equal:today',
             'delivery_time' => 'required|date_format:H:i',
+            'delivery_distance' => 'nullable|numeric|min:0',
             'allergies' => 'nullable|string',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
-            'items.*.menu_item_id' => 'required|exists:menu_items,id',
+            'items.*.menu_item_id' => 'nullable|exists:menu_items,id|required_without:items.*.custom_item_name',
+            'items.*.custom_item_name' => 'nullable|string|max:255|required_without:items.*.menu_item_id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.menu_item_option_id' => 'nullable|exists:menu_item_options,id',
+            'items.*.price' => 'required|numeric|min:0',
             'delivery_charge' => 'nullable|numeric|min:0',
         ]);
 
@@ -63,14 +72,21 @@ class OrderController extends Controller
             // Calculate total amount
             $totalAmount = 0;
             foreach ($validated['items'] as $item) {
-                $menuItem = MenuItem::find($item['menu_item_id']);
-                $price = $menuItem->price;
-                
-                // If option is selected, use option price
-                if (!empty($item['menu_item_option_id'])) {
-                    $option = $menuItem->options()->find($item['menu_item_option_id']);
-                    if ($option) {
-                        $price = $option->price;
+                // Check if it's a custom item or regular menu item
+                if (!empty($item['custom_item_name'])) {
+                    // Custom item - use provided price
+                    $price = $item['price'];
+                } else {
+                    // Regular menu item
+                    $menuItem = MenuItem::find($item['menu_item_id']);
+                    $price = $menuItem->price;
+                    
+                    // If option is selected, use option price
+                    if (!empty($item['menu_item_option_id'])) {
+                        $option = $menuItem->options()->find($item['menu_item_option_id']);
+                        if ($option) {
+                            $price = $option->price;
+                        }
                     }
                 }
                 
@@ -90,6 +106,7 @@ class OrderController extends Controller
                 'customer_postcode' => !empty($validated['customer_postcode']) ? $validated['customer_postcode'] : null,
                 'delivery_date' => $validated['delivery_date'],
                 'delivery_time' => $validated['delivery_time'],
+                'delivery_distance' => !empty($validated['delivery_distance']) ? $validated['delivery_distance'] : null,
                 'allergies' => !empty($validated['allergies']) ? $validated['allergies'] : null,
                 'notes' => !empty($validated['notes']) ? $validated['notes'] : null,
                 'total_amount' => $totalAmount,
@@ -99,23 +116,39 @@ class OrderController extends Controller
 
             // Create order items
             foreach ($validated['items'] as $item) {
-                $menuItem = MenuItem::find($item['menu_item_id']);
-                $price = $menuItem->price;
-                
-                if (!empty($item['menu_item_option_id'])) {
-                    $option = $menuItem->options()->find($item['menu_item_option_id']);
-                    if ($option) {
-                        $price = $option->price;
+                // Check if it's a custom item or regular menu item
+                if (!empty($item['custom_item_name'])) {
+                    // Custom item - use provided price and name
+                    $price = $item['price'];
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'menu_item_id' => null,
+                        'menu_item_option_id' => null,
+                        'custom_item_name' => $item['custom_item_name'],
+                        'quantity' => $item['quantity'],
+                        'price' => $price,
+                    ]);
+                } else {
+                    // Regular menu item
+                    $menuItem = MenuItem::find($item['menu_item_id']);
+                    $price = $menuItem->price;
+                    
+                    if (!empty($item['menu_item_option_id'])) {
+                        $option = $menuItem->options()->find($item['menu_item_option_id']);
+                        if ($option) {
+                            $price = $option->price;
+                        }
                     }
-                }
 
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'menu_item_id' => $item['menu_item_id'],
-                    'menu_item_option_id' => $item['menu_item_option_id'] ?? null,
-                    'quantity' => $item['quantity'],
-                    'price' => $price,
-                ]);
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'menu_item_id' => $item['menu_item_id'],
+                        'menu_item_option_id' => $item['menu_item_option_id'] ?? null,
+                        'custom_item_name' => null,
+                        'quantity' => $item['quantity'],
+                        'price' => $price,
+                    ]);
+                }
             }
 
             DB::commit();
@@ -159,6 +192,7 @@ class OrderController extends Controller
         return Inertia::render('Admin/Orders/Show', [
             'order' => [
                 'id' => $order->id,
+                'daily_order_number' => $this->getDailyOrderNumber($order),
                 'user_id' => $order->user_id,
                 'city_id' => $order->city_id,
                 'total_amount' => $order->total_amount,
@@ -171,6 +205,7 @@ class OrderController extends Controller
                 'customer_postcode' => $order->customer_postcode,
                 'delivery_date' => $order->delivery_date ? (is_string($order->delivery_date) ? $order->delivery_date : $order->delivery_date->format('Y-m-d')) : null,
                 'delivery_time' => $order->delivery_time ? (is_string($order->delivery_time) ? substr($order->delivery_time, 0, 5) : $order->delivery_time->format('H:i')) : null,
+                'delivery_distance' => $order->delivery_distance,
                 'allergies' => $order->allergies,
                 'notes' => $order->notes,
                 'created_at' => $order->created_at,
@@ -191,6 +226,8 @@ class OrderController extends Controller
                         'price' => $item->price,
                         'menu_item_id' => $item->menu_item_id,
                         'menu_item_option_id' => $item->menu_item_option_id,
+                        'custom_item_name' => $item->custom_item_name,
+                        'is_custom' => !empty($item->custom_item_name),
                         'menuItem' => $item->menuItem ? [
                             'id' => $item->menuItem->id,
                             'name' => $item->menuItem->name,
@@ -224,6 +261,7 @@ class OrderController extends Controller
             'customer_postcode' => 'nullable|string|max:20',
             'delivery_date' => 'sometimes|required|date',
             'delivery_time' => 'sometimes|required|date_format:H:i',
+            'delivery_distance' => 'nullable|numeric|min:0',
             'allergies' => 'nullable|string',
             'notes' => 'nullable|string',
             'delivery_charge' => 'nullable|numeric|min:0',
@@ -261,35 +299,53 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
 
         $validated = $request->validate([
-            'menu_item_id' => 'required|exists:menu_items,id',
+            'menu_item_id' => 'nullable|exists:menu_items,id|required_without:custom_item_name',
+            'custom_item_name' => 'nullable|string|max:255|required_without:menu_item_id',
             'quantity' => 'required|integer|min:1',
             'menu_item_option_id' => 'nullable|exists:menu_item_options,id',
+            'price' => 'nullable|numeric|min:0|required_with:custom_item_name',
         ]);
 
-        $menuItem = MenuItem::find($validated['menu_item_id']);
-        $price = $menuItem->price;
+        // Check if it's a custom item or regular menu item
+        if (!empty($validated['custom_item_name'])) {
+            // Custom item - use provided price and name
+            $price = $validated['price'];
+            OrderItem::create([
+                'order_id' => $order->id,
+                'menu_item_id' => null,
+                'menu_item_option_id' => null,
+                'custom_item_name' => $validated['custom_item_name'],
+                'quantity' => $validated['quantity'],
+                'price' => $price,
+            ]);
+        } else {
+            // Regular menu item
+            $menuItem = MenuItem::find($validated['menu_item_id']);
+            $price = $menuItem->price;
 
-        if (!empty($validated['menu_item_option_id'])) {
-            $option = $menuItem->options()->find($validated['menu_item_option_id']);
-            if ($option) {
-                $price = $option->price;
+            if (!empty($validated['menu_item_option_id'])) {
+                $option = $menuItem->options()->find($validated['menu_item_option_id']);
+                if ($option) {
+                    $price = $option->price;
+                }
             }
-        }
 
-        OrderItem::create([
-            'order_id' => $order->id,
-            'menu_item_id' => $validated['menu_item_id'],
-            'menu_item_option_id' => $validated['menu_item_option_id'] ?? null,
-            'quantity' => $validated['quantity'],
-            'price' => $price,
-        ]);
+            OrderItem::create([
+                'order_id' => $order->id,
+                'menu_item_id' => $validated['menu_item_id'],
+                'menu_item_option_id' => $validated['menu_item_option_id'] ?? null,
+                'custom_item_name' => null,
+                'quantity' => $validated['quantity'],
+                'price' => $price,
+            ]);
+        }
 
         // Recalculate total
         $totalAmount = $order->orderItems()->sum(DB::raw('price * quantity'));
         $totalAmount += $order->delivery_charge ?? 0;
         $order->update(['total_amount' => $totalAmount]);
 
-        return redirect()->back()->with('message', 'Menu item added successfully!');
+        return redirect()->back()->with('message', 'Item added successfully!');
     }
 
     public function removeMenuItem($orderId, $itemId)
@@ -317,5 +373,24 @@ class OrderController extends Controller
 
         return redirect()->route('admin.orders.index')
             ->with('message', "Order #{$orderId} has been deleted successfully!");
+    }
+
+    /**
+     * Calculate daily order number (resets each day)
+     */
+    private function getDailyOrderNumber($order)
+    {
+        $orderDate = \Carbon\Carbon::parse($order->created_at)->startOfDay();
+        $dailyOrderNumber = Order::whereDate('created_at', $orderDate->format('Y-m-d'))
+            ->where(function($query) use ($order) {
+                $query->where('created_at', '<', $order->created_at)
+                    ->orWhere(function($q) use ($order) {
+                        $q->where('created_at', $order->created_at)
+                          ->where('id', '<=', $order->id);
+                    });
+            })
+            ->count();
+        
+        return $dailyOrderNumber;
     }
 }

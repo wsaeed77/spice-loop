@@ -4,6 +4,8 @@ import Layout from '../../../Components/Layout';
 
 export default function OrderCreate({ auth, cities, menuItems, flash }) {
     const [selectedItems, setSelectedItems] = useState([]);
+    const [showCustomItemModal, setShowCustomItemModal] = useState(false);
+    const [customItem, setCustomItem] = useState({ name: '', price: '', quantity: 1 });
     
     const { data, setData, post, processing, errors } = useForm({
         city_id: '',
@@ -14,6 +16,7 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
         customer_postcode: '',
         delivery_date: '',
         delivery_time: '',
+        delivery_distance: '',
         allergies: '',
         notes: '',
         delivery_charge: 0,
@@ -44,6 +47,27 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
         setSelectedItems(updated);
     };
 
+    const addCustomItem = () => {
+        if (!customItem.name || !customItem.price) {
+            alert('Please enter item name and price.');
+            return;
+        }
+        
+        const newItem = {
+            custom_item_name: customItem.name,
+            menu_item_id: null,
+            menu_item_option_id: null,
+            quantity: parseInt(customItem.quantity) || 1,
+            price: parseFloat(customItem.price) || 0,
+            menuItem: null,
+            option: null,
+            isCustom: true,
+        };
+        setSelectedItems([...selectedItems, newItem]);
+        setCustomItem({ name: '', price: '', quantity: 1 });
+        setShowCustomItemModal(false);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         
@@ -52,48 +76,61 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
             return;
         }
         
-        const items = selectedItems.map(item => ({
-            menu_item_id: item.menu_item_id,
-            menu_item_option_id: item.menu_item_option_id || null,
-            quantity: parseInt(item.quantity) || 1,
-        }));
+        const items = selectedItems.map(item => {
+            if (item.isCustom || item.custom_item_name) {
+                // Custom item
+                return {
+                    custom_item_name: item.custom_item_name || item.name,
+                    menu_item_id: null,
+                    menu_item_option_id: null,
+                    quantity: parseInt(item.quantity) || 1,
+                    price: parseFloat(item.price) || 0,
+                };
+            } else {
+                // Regular menu item
+                return {
+                    menu_item_id: item.menu_item_id,
+                    menu_item_option_id: item.menu_item_option_id || null,
+                    quantity: parseInt(item.quantity) || 1,
+                    price: parseFloat(item.price) || 0,
+                };
+            }
+        });
 
-        // Merge items into current form data and update form state
-        const updatedData = {
+        // Prepare complete form data with items included
+        const formData = {
             ...data,
             items: items,
         };
         
-        // Set all form data at once including items
-        setData(updatedData);
-        
-        // Use form's post method - it will use the updated form state
-        // Using a small delay to ensure setData completes (React state update)
-        setTimeout(() => {
-            post('/admin/orders', {
-                onSuccess: () => {
-                    setSelectedItems([]);
-                    setData({
-                        city_id: '',
-                        customer_name: '',
-                        customer_email: '',
-                        customer_phone: '',
-                        customer_address: '',
-                        customer_postcode: '',
-                        delivery_date: '',
-                        delivery_time: '',
-                        allergies: '',
-                        notes: '',
-                        delivery_charge: 0,
-                        items: [],
-                    });
-                },
-                onError: (errors) => {
-                    console.log('Form errors:', errors);
-                    console.log('Items being sent:', items);
-                },
-            });
-        }, 0);
+        // Use router.post directly with complete data to avoid race condition
+        router.post('/admin/orders', formData, {
+            preserveState: false,
+            preserveScroll: false,
+            onSuccess: () => {
+                setSelectedItems([]);
+                setData({
+                    city_id: '',
+                    customer_name: '',
+                    customer_email: '',
+                    customer_phone: '',
+                    customer_address: '',
+                    customer_postcode: '',
+                    delivery_date: '',
+                    delivery_time: '',
+                    delivery_distance: '',
+                    allergies: '',
+                    notes: '',
+                    delivery_charge: 0,
+                    items: [],
+                });
+            },
+            onError: (errors) => {
+                console.log('Form errors:', errors);
+                console.log('Items being sent:', items);
+                console.log('Form data:', formData);
+            },
+        });
     };
 
     const calculateTotal = () => {
@@ -238,6 +275,20 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
                                 </div>
 
                                 <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Distance (miles/km)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={data.delivery_distance}
+                                        onChange={(e) => setData('delivery_distance', parseFloat(e.target.value) || '')}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                        placeholder="e.g., 5.5"
+                                    />
+                                    {errors.delivery_distance && <p className="text-red-500 text-sm mt-1">{errors.delivery_distance}</p>}
+                                </div>
+
+                                <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Charge</label>
                                     <input
                                         type="number"
@@ -277,7 +328,16 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
 
                     {/* Menu Items */}
                     <div className="bg-white rounded-lg shadow-md p-6 border border-spice-orange">
-                        <h2 className="text-2xl font-bold text-spice-maroon mb-4">Menu Items</h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold text-spice-maroon">Menu Items</h2>
+                            <button
+                                type="button"
+                                onClick={() => setShowCustomItemModal(true)}
+                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition text-sm"
+                            >
+                                + Add Custom Item
+                            </button>
+                        </div>
                         
                         {/* Selected Items */}
                         {selectedItems.length > 0 && (
@@ -285,8 +345,15 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
                                 {selectedItems.map((item, index) => (
                                     <div key={index} className="flex justify-between items-center border-b pb-2">
                                         <div className="flex-1">
-                                            <p className="font-semibold">{item.menuItem?.name || 'Unknown'}</p>
-                                            {item.option && <p className="text-sm text-gray-500">{item.option.name}</p>}
+                                            <p className="font-semibold">
+                                                {item.isCustom || item.custom_item_name 
+                                                    ? item.custom_item_name || item.name 
+                                                    : (item.menuItem?.name || 'Unknown')}
+                                            </p>
+                                            {item.option && !item.isCustom && <p className="text-sm text-gray-500">{item.option.name}</p>}
+                                            {(item.isCustom || item.custom_item_name) && (
+                                                <p className="text-xs text-blue-600">Custom Item</p>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <input
@@ -374,6 +441,77 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
                         </button>
                     </div>
                 </form>
+
+                {/* Custom Item Modal */}
+                {showCustomItemModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+                            <h3 className="text-2xl font-bold text-spice-maroon mb-4">Add Custom Item</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Item Name / Title *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={customItem.name}
+                                        onChange={(e) => setCustomItem({ ...customItem, name: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                        placeholder="e.g., Special Curry"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Price *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={customItem.price}
+                                        onChange={(e) => setCustomItem({ ...customItem, price: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                        placeholder="e.g., 15.99"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Quantity *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={customItem.quantity}
+                                        onChange={(e) => setCustomItem({ ...customItem, quantity: parseInt(e.target.value) || 1 })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowCustomItemModal(false);
+                                            setCustomItem({ name: '', price: '', quantity: 1 });
+                                        }}
+                                        className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={addCustomItem}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+                                    >
+                                        Add Item
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </Layout>
     );

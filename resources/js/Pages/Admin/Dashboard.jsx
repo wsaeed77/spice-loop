@@ -123,7 +123,7 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                             <tbody>
                                 {recentOrders?.map((order) => (
                                     <tr key={order.id} className="border-b">
-                                        <td className="py-2">#{order.id}</td>
+                                        <td className="py-2">#{order.daily_order_number || order.id}</td>
                                         <td className="py-2">{order.customer_name}</td>
                                         <td className="py-2">£{order.total_amount}</td>
                                         <td className="py-2">

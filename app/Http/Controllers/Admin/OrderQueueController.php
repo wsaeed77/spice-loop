@@ -25,6 +25,9 @@ class OrderQueueController extends Controller
                     return null;
                 }
                 
+                // Calculate daily order number (resets each day)
+                $dailyOrderNumber = $this->getDailyOrderNumber($order);
+                
                 // delivery_time is stored as TIME (HH:MM:SS), so it's returned as string
                 $deliveryTime = is_string($order->delivery_time) ? substr($order->delivery_time, 0, 5) : $order->delivery_time->format('H:i');
                 $deliveryDateTime = Carbon::parse($order->delivery_date->format('Y-m-d') . ' ' . $deliveryTime);
@@ -45,6 +48,7 @@ class OrderQueueController extends Controller
 
                 return [
                     'id' => $order->id,
+                    'daily_order_number' => $dailyOrderNumber,
                     'customer_name' => $order->customer_name,
                     'customer_phone' => $order->customer_phone,
                     'customer_address' => $order->customer_address,
@@ -68,6 +72,8 @@ class OrderQueueController extends Controller
                             'id' => $item->id,
                             'quantity' => $item->quantity,
                             'price' => $item->price,
+                            'custom_item_name' => $item->custom_item_name,
+                            'is_custom' => !empty($item->custom_item_name),
                             'menuItem' => $item->menuItem ? [
                                 'id' => $item->menuItem->id,
                                 'name' => $item->menuItem->name,
@@ -95,6 +101,25 @@ class OrderQueueController extends Controller
         }
 
         return $remainingMinutes . 'm';
+    }
+
+    /**
+     * Calculate daily order number (resets each day)
+     */
+    private function getDailyOrderNumber($order)
+    {
+        $orderDate = Carbon::parse($order->created_at)->startOfDay();
+        $dailyOrderNumber = Order::whereDate('created_at', $orderDate->format('Y-m-d'))
+            ->where(function($query) use ($order) {
+                $query->where('created_at', '<', $order->created_at)
+                    ->orWhere(function($q) use ($order) {
+                        $q->where('created_at', $order->created_at)
+                          ->where('id', '<=', $order->id);
+                    });
+            })
+            ->count();
+        
+        return $dailyOrderNumber;
     }
 }
 
