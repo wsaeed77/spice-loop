@@ -111,7 +111,7 @@ class OrderController extends Controller
             $order = Order::create([
                 'city_id' => $validated['city_id'],
                 'customer_name' => $validated['customer_name'],
-                'customer_email' => !empty($validated['customer_email']) ? $validated['customer_email'] : null,
+                'customer_email' => (!empty($validated['customer_email']) && trim($validated['customer_email']) !== '') ? trim($validated['customer_email']) : null,
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
                 'customer_postcode' => !empty($validated['customer_postcode']) ? $validated['customer_postcode'] : null,
@@ -295,6 +295,23 @@ class OrderController extends Controller
         // Normalize time before updating
         if (isset($validated['delivery_time'])) {
             $validated['delivery_time'] = $this->normalizeTime($validated['delivery_time']);
+        }
+
+        // Convert empty strings to null for nullable fields
+        if (isset($validated['customer_email'])) {
+            $validated['customer_email'] = (!empty($validated['customer_email']) && trim($validated['customer_email']) !== '') ? trim($validated['customer_email']) : null;
+        }
+        if (isset($validated['customer_postcode']) && empty($validated['customer_postcode'])) {
+            $validated['customer_postcode'] = null;
+        }
+        if (isset($validated['delivery_distance']) && empty($validated['delivery_distance'])) {
+            $validated['delivery_distance'] = null;
+        }
+        if (isset($validated['allergies']) && empty($validated['allergies'])) {
+            $validated['allergies'] = null;
+        }
+        if (isset($validated['notes']) && empty($validated['notes'])) {
+            $validated['notes'] = null;
         }
 
         $order->update($validated);

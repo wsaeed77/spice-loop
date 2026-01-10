@@ -92,7 +92,7 @@ class OrderController extends Controller
                 'total_amount' => $totalAmount,
                 'delivery_charge' => $deliveryCharge,
                 'customer_name' => $validated['customer_name'],
-                'customer_email' => $validated['customer_email'],
+                'customer_email' => (!empty($validated['customer_email']) && trim($validated['customer_email']) !== '') ? trim($validated['customer_email']) : null,
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
                 'customer_postcode' => $validated['customer_postcode'],
