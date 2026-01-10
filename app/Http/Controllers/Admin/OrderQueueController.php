@@ -85,8 +85,40 @@ class OrderQueueController extends Controller
             })
             ->filter(); // Remove null entries
 
+        $ordersCollection = $orders->values();
+        
+        // Find the next order (earliest delivery time that's in the future)
+        $nextOrder = null;
+        $now = Carbon::now();
+        
+        foreach ($ordersCollection as $order) {
+            $deliveryDateTime = Carbon::parse($order['delivery_datetime']);
+            if ($deliveryDateTime->isFuture()) {
+                $nextOrder = $order;
+                break;
+            }
+        }
+        
+        // Calculate next order info
+        $nextOrderInfo = null;
+        if ($nextOrder) {
+            $nextDeliveryDateTime = Carbon::parse($nextOrder['delivery_datetime']);
+            $minutesRemaining = $now->diffInMinutes($nextDeliveryDateTime, false);
+            $hoursRemaining = floor($minutesRemaining / 60);
+            $remainingMinutes = $minutesRemaining % 60;
+            
+            $nextOrderInfo = [
+                'order_number' => $nextOrder['daily_order_number'] ?? $nextOrder['id'],
+                'time_remaining' => $this->formatTimeRemaining($hoursRemaining, $remainingMinutes),
+                'raw_minutes_remaining' => $minutesRemaining,
+                'hours_remaining' => $hoursRemaining,
+                'minutes_remaining' => $remainingMinutes,
+            ];
+        }
+
         return Inertia::render('Admin/Orders/Queue', [
-            'orders' => $orders->values(), // Re-index array after filtering
+            'orders' => $ordersCollection,
+            'nextOrderInfo' => $nextOrderInfo,
         ]);
     }
 

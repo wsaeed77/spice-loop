@@ -2,8 +2,9 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import Layout from '../../../Components/Layout';
 
-export default function OrderQueue({ auth, orders, flash }) {
+export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
     const [localOrders, setLocalOrders] = useState(orders || []);
+    const [currentTime, setCurrentTime] = useState(Date.now());
     const [beepPlayed, setBeepPlayed] = useState({});
     const [snoozedOrders, setSnoozedOrders] = useState({}); // { orderId: timestamp when snoozed }
     const [snoozeDisplayTime, setSnoozeDisplayTime] = useState(Date.now()); // Force re-render for countdown
@@ -79,10 +80,19 @@ export default function OrderQueue({ auth, orders, flash }) {
         };
     }, [localOrders, snoozedOrders]);
 
+    // Update current time every second for live countdown
+    useEffect(() => {
+        const timeInterval = setInterval(() => {
+            setCurrentTime(Date.now());
+        }, 1000);
+
+        return () => clearInterval(timeInterval);
+    }, []);
+
     // Auto-refresh every minute
     useEffect(() => {
         intervalRef.current = setInterval(() => {
-            router.reload({ only: ['orders'], preserveState: false });
+            router.reload({ only: ['orders', 'nextOrderInfo'], preserveState: false });
         }, 60000); // 60 seconds = 1 minute
 
         return () => {
@@ -91,6 +101,36 @@ export default function OrderQueue({ auth, orders, flash }) {
             }
         };
     }, []);
+
+    // Calculate real-time next order countdown
+    const getNextOrderDisplay = () => {
+        if (!nextOrderInfo || nextOrderInfo.raw_minutes_remaining <= 0) {
+            return null;
+        }
+        
+        // Calculate current time remaining based on current time
+        const now = new Date(currentTime);
+        const nextOrderDateTime = new Date(localOrders.find(o => (o.daily_order_number || o.id) == nextOrderInfo.order_number)?.delivery_datetime);
+        
+        if (!nextOrderDateTime || isNaN(nextOrderDateTime.getTime())) {
+            return nextOrderInfo.time_remaining; // Fallback to server-calculated time
+        }
+        
+        const diffMs = nextOrderDateTime - now;
+        const diffMinutes = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMinutes / 60);
+        const remainingMinutes = diffMinutes % 60;
+        
+        if (diffMinutes < 0) {
+            return 'Overdue';
+        }
+        
+        if (diffHours > 0) {
+            return `${diffHours}h ${remainingMinutes}m`;
+        }
+        
+        return `${remainingMinutes}m`;
+    };
 
     // Update local orders when props change and clean up snoozed orders
     useEffect(() => {
@@ -241,6 +281,48 @@ export default function OrderQueue({ auth, orders, flash }) {
                 {flash?.message && (
                     <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
                         {flash.message}
+                    </div>
+                )}
+
+                {/* Next Order Banner */}
+                {(() => {
+                    const displayTime = getNextOrderDisplay();
+                    const nextOrder = localOrders.find(o => (o.daily_order_number || o.id) == nextOrderInfo?.order_number);
+                    const minutesRemaining = nextOrder?.minutes_remaining ?? nextOrderInfo?.raw_minutes_remaining ?? 0;
+                    
+                    if (nextOrderInfo && displayTime && minutesRemaining > 0) {
+                        return (
+                            <div className={`mb-6 p-6 rounded-lg border-2 shadow-lg ${
+                                minutesRemaining <= 20 
+                                    ? 'bg-red-100 border-red-500 text-red-900 animate-pulse' 
+                                    : minutesRemaining <= 60
+                                    ? 'bg-orange-100 border-orange-500 text-orange-900'
+                                    : 'bg-blue-100 border-blue-500 text-blue-900'
+                            }`}>
+                                <div className="text-center">
+                                    <p className="text-2xl md:text-3xl font-bold mb-2">
+                                        Next order is in {displayTime}
+                                    </p>
+                                    <p className="text-lg opacity-80">
+                                        Order #{nextOrderInfo.order_number}
+                                    </p>
+                                </div>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
+
+                {nextOrderInfo && nextOrderInfo.raw_minutes_remaining <= 0 && (
+                    <div className="mb-6 p-6 rounded-lg border-2 border-red-500 bg-red-100 text-red-900 shadow-lg">
+                        <div className="text-center">
+                            <p className="text-2xl md:text-3xl font-bold mb-2">
+                                ⚠️ Orders are overdue
+                            </p>
+                            <p className="text-lg opacity-80">
+                                Please check the queue for urgent orders
+                            </p>
+                        </div>
                     </div>
                 )}
 
