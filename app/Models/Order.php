@@ -31,6 +31,7 @@ class Order extends Model
         'total_amount' => 'decimal:2',
         'delivery_charge' => 'decimal:2',
         'delivery_date' => 'date',
+        'delivery_distance' => 'integer',
     ];
 
     public function user()

@@ -14,7 +14,7 @@ return new class extends Migration
         if (Schema::hasTable('orders')) {
             Schema::table('orders', function (Blueprint $table) {
                 if (!Schema::hasColumn('orders', 'delivery_distance')) {
-                    $table->decimal('delivery_distance', 8, 2)->nullable()->after('delivery_time')->comment('Distance in miles or km');
+                    $table->integer('delivery_distance')->nullable()->after('delivery_time')->comment('Drive distance in minutes');
                 }
             });
         }

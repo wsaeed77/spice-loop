@@ -275,15 +275,15 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Distance (miles/km)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Drive Distance (minutes)</label>
                                     <input
                                         type="number"
-                                        step="0.01"
+                                        step="1"
                                         min="0"
                                         value={data.delivery_distance}
-                                        onChange={(e) => setData('delivery_distance', parseFloat(e.target.value) || '')}
+                                        onChange={(e) => setData('delivery_distance', parseInt(e.target.value) || '')}
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2"
-                                        placeholder="e.g., 5.5"
+                                        placeholder="e.g., 15"
                                     />
                                     {errors.delivery_distance && <p className="text-red-500 text-sm mt-1">{errors.delivery_distance}</p>}
                                 </div>

@@ -346,20 +346,20 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                                     )}
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">Delivery Distance (miles/km)</p>
+                                    <p className="text-sm text-gray-500">Drive Distance (minutes)</p>
                                     {editMode ? (
                                         <input
                                             type="number"
-                                            step="0.01"
+                                            step="1"
                                             min="0"
                                             value={orderForm.data.delivery_distance || ''}
-                                            onChange={(e) => orderForm.setData('delivery_distance', parseFloat(e.target.value) || '')}
+                                            onChange={(e) => orderForm.setData('delivery_distance', parseInt(e.target.value) || '')}
                                             className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-                                            placeholder="e.g., 5.5"
+                                            placeholder="e.g., 15"
                                         />
                                     ) : (
                                         <p className="font-semibold text-gray-900">
-                                            {order.delivery_distance ? `${order.delivery_distance} miles/km` : 'N/A'}
+                                            {order.delivery_distance ? `${order.delivery_distance} minutes` : 'N/A'}
                                         </p>
                                     )}
                                 </div>
