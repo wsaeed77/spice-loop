@@ -391,9 +391,6 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
                                         }`}>
                                             {order.formatted_time_remaining || 'N/A'}
                                         </p>
-                                        <p className="font-bold text-lg text-gray-900 mt-1">
-                                            Delivery: {formatTime(order.delivery_time)}
-                                        </p>
                                     </div>
 
                                     <div>
@@ -406,6 +403,9 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
                                         <p className="font-semibold text-gray-900">
                                             {order.customer_address}
                                             {order.customer_postcode && `, ${order.customer_postcode}`}
+                                        </p>
+                                        <p className="font-bold text-lg text-gray-900 mt-1">
+                                            Delivery: {formatTime(order.delivery_time)}
                                         </p>
                                     </div>
 
