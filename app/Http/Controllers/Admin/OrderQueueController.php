@@ -109,6 +109,8 @@ class OrderQueueController extends Controller
             
             $nextOrderInfo = [
                 'order_number' => $nextOrder['daily_order_number'] ?? $nextOrder['id'],
+                'order_id' => $nextOrder['id'],
+                'delivery_datetime' => $nextOrder['delivery_datetime'],
                 'time_remaining' => $this->formatTimeRemaining($hoursRemaining, $remainingMinutes),
                 'raw_minutes_remaining' => $minutesRemaining,
                 'hours_remaining' => $hoursRemaining,

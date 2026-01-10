@@ -89,7 +89,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
         return () => clearInterval(timeInterval);
     }, []);
 
-    // Auto-refresh every minute
+    // Auto-refresh every minute (updates orders and nextOrderInfo)
     useEffect(() => {
         intervalRef.current = setInterval(() => {
             router.reload({ only: ['orders', 'nextOrderInfo'], preserveState: false });
@@ -102,17 +102,22 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
         };
     }, []);
 
+    // Update current time state when nextOrderInfo changes to trigger recalculation
+    useEffect(() => {
+        setCurrentTime(Date.now());
+    }, [nextOrderInfo]);
+
     // Calculate real-time next order countdown
     const getNextOrderDisplay = () => {
-        if (!nextOrderInfo || nextOrderInfo.raw_minutes_remaining <= 0) {
+        if (!nextOrderInfo || !nextOrderInfo.delivery_datetime) {
             return null;
         }
         
         // Calculate current time remaining based on current time
         const now = new Date(currentTime);
-        const nextOrderDateTime = new Date(localOrders.find(o => (o.daily_order_number || o.id) == nextOrderInfo.order_number)?.delivery_datetime);
+        const nextOrderDateTime = new Date(nextOrderInfo.delivery_datetime);
         
-        if (!nextOrderDateTime || isNaN(nextOrderDateTime.getTime())) {
+        if (isNaN(nextOrderDateTime.getTime())) {
             return nextOrderInfo.time_remaining; // Fallback to server-calculated time
         }
         
@@ -130,6 +135,23 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
         }
         
         return `${remainingMinutes}m`;
+    };
+
+    // Get current minutes remaining for styling
+    const getCurrentMinutesRemaining = () => {
+        if (!nextOrderInfo || !nextOrderInfo.delivery_datetime) {
+            return 0;
+        }
+        
+        const now = new Date(currentTime);
+        const nextOrderDateTime = new Date(nextOrderInfo.delivery_datetime);
+        
+        if (isNaN(nextOrderDateTime.getTime())) {
+            return nextOrderInfo.raw_minutes_remaining || 0;
+        }
+        
+        const diffMs = nextOrderDateTime - now;
+        return Math.floor(diffMs / 60000);
     };
 
     // Update local orders when props change and clean up snoozed orders
@@ -287,8 +309,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
                 {/* Next Order Banner */}
                 {(() => {
                     const displayTime = getNextOrderDisplay();
-                    const nextOrder = localOrders.find(o => (o.daily_order_number || o.id) == nextOrderInfo?.order_number);
-                    const minutesRemaining = nextOrder?.minutes_remaining ?? nextOrderInfo?.raw_minutes_remaining ?? 0;
+                    const minutesRemaining = getCurrentMinutesRemaining();
                     
                     if (nextOrderInfo && displayTime && minutesRemaining > 0) {
                         return (
@@ -369,6 +390,9 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
                                             'text-gray-900'
                                         }`}>
                                             {order.formatted_time_remaining || 'N/A'}
+                                        </p>
+                                        <p className="font-bold text-lg text-gray-900 mt-1">
+                                            Delivery: {formatTime(order.delivery_time)}
                                         </p>
                                     </div>
 
