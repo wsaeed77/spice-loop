@@ -63,6 +63,10 @@ export default function AdminDashboard({ auth, stats, recentOrders, recentCateri
                         <h3 className="text-xl font-bold text-spice-maroon mb-2">Settings</h3>
                         <p className="text-gray-600">Configure pricing and contact info</p>
                     </Link>
+                    <Link href="/admin/riders" className="bg-white rounded-lg shadow-md p-6 border border-spice-orange hover:border-spice-gold transition">
+                        <h3 className="text-xl font-bold text-spice-maroon mb-2">Delivery Riders</h3>
+                        <p className="text-gray-600">Manage delivery riders and assignments</p>
+                    </Link>
                 </div>
 
                 {/* Cost Calculator Section */}

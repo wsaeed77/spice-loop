@@ -12,6 +12,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'city_id',
+        'rider_id',
         'total_amount',
         'delivery_charge',
         'status',
@@ -47,5 +48,10 @@ class Order extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function rider()
+    {
+        return $this->belongsTo(DeliveryRider::class);
     }
 }

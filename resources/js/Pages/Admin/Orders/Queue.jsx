@@ -2,12 +2,13 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import Layout from '../../../Components/Layout';
 
-export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
+export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders }) {
     const [localOrders, setLocalOrders] = useState(orders || []);
     const [currentTime, setCurrentTime] = useState(Date.now());
     const [beepPlayed, setBeepPlayed] = useState({});
     const [snoozedOrders, setSnoozedOrders] = useState({}); // { orderId: timestamp when snoozed }
     const [snoozeDisplayTime, setSnoozeDisplayTime] = useState(Date.now()); // Force re-render for countdown
+    const [assigningRider, setAssigningRider] = useState({}); // { orderId: true/false }
     const intervalRef = useRef(null);
     const beepIntervalRef = useRef(null);
     const snoozeDisplayIntervalRef = useRef(null);
@@ -219,6 +220,19 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
         }, {
             preserveScroll: true,
             preserveState: false,
+        });
+    };
+
+    const handleRiderAssignment = (orderId, riderId) => {
+        if (!riderId) return;
+        
+        setAssigningRider(prev => ({ ...prev, [orderId]: true }));
+        router.post(`/admin/orders/${orderId}/assign-rider`, {
+            rider_id: riderId,
+        }, {
+            preserveScroll: true,
+            preserveState: false,
+            onFinish: () => setAssigningRider(prev => ({ ...prev, [orderId]: false })),
         });
     };
 
@@ -488,6 +502,65 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo }) {
                                             </option>
                                         ))}
                                     </select>
+
+                                    {/* Rider Assignment */}
+                                    <div className="mt-3">
+                                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                                            Delivery Rider
+                                        </label>
+                                        {order.rider ? (
+                                            <div className="text-sm">
+                                                <p className="font-semibold text-gray-900">{order.rider.name}</p>
+                                                <p className="text-xs text-gray-600">{order.rider.phone}</p>
+                                                {riders && riders.length > 0 && (
+                                                    <select
+                                                        value=""
+                                                        onChange={(e) => {
+                                                            if (e.target.value) {
+                                                                handleRiderAssignment(order.id, e.target.value);
+                                                                e.target.value = '';
+                                                            }
+                                                        }}
+                                                        disabled={assigningRider[order.id]}
+                                                        className="mt-1 w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-spice-orange focus:border-spice-orange disabled:opacity-50"
+                                                    >
+                                                        <option value="">Change rider...</option>
+                                                        {riders.filter(r => r.id !== order.rider.id).map((rider) => (
+                                                            <option key={rider.id} value={rider.id}>
+                                                                {rider.name} - {rider.phone}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            riders && riders.length > 0 ? (
+                                                <select
+                                                    value=""
+                                                    onChange={(e) => {
+                                                        if (e.target.value) {
+                                                            handleRiderAssignment(order.id, e.target.value);
+                                                            e.target.value = '';
+                                                        }
+                                                    }}
+                                                    disabled={assigningRider[order.id]}
+                                                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-spice-orange focus:border-spice-orange disabled:opacity-50"
+                                                >
+                                                    <option value="">Select rider...</option>
+                                                    {riders.map((rider) => (
+                                                        <option key={rider.id} value={rider.id}>
+                                                            {rider.name} - {rider.phone}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <p className="text-xs text-gray-500">No riders available</p>
+                                            )
+                                        )}
+                                        {assigningRider[order.id] && (
+                                            <p className="text-xs text-blue-600 mt-1">Assigning...</p>
+                                        )}
+                                    </div>
                                     
                                     <Link
                                         href={`/admin/orders/${order.id}`}

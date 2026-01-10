@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CateringController as AdminCateringController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\CostCalculatorController;
+use App\Http\Controllers\Admin\DeliveryRiderController;
 use App\Http\Controllers\Admin\MenuItemCalculatorController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -116,12 +117,21 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::post('/orders/{order}/assign-rider', [AdminOrderController::class, 'assignRider'])->name('orders.assign-rider');
     Route::post('/orders/{order}/items', [AdminOrderController::class, 'addMenuItem'])->name('orders.add-item');
     Route::delete('/orders/{order}/items/{item}', [AdminOrderController::class, 'removeMenuItem'])->name('orders.remove-item');
     Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
     
     // Order Queue Dashboard
     Route::get('/orders-queue', [OrderQueueController::class, 'index'])->name('orders.queue');
+    
+    // Delivery Riders Management
+    Route::get('/riders', [DeliveryRiderController::class, 'index'])->name('riders.index');
+    Route::get('/riders/create', [DeliveryRiderController::class, 'create'])->name('riders.create');
+    Route::post('/riders', [DeliveryRiderController::class, 'store'])->name('riders.store');
+    Route::get('/riders/{id}/edit', [DeliveryRiderController::class, 'edit'])->name('riders.edit');
+    Route::patch('/riders/{id}', [DeliveryRiderController::class, 'update'])->name('riders.update');
+    Route::delete('/riders/{id}', [DeliveryRiderController::class, 'destroy'])->name('riders.destroy');
     
     // Catering Management
     Route::get('/catering', [AdminCateringController::class, 'index'])->name('catering.index');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DeliveryRider;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class OrderQueueController extends Controller
     public function index()
     {
         // Get orders that are not delivered or cancelled
-        $orders = Order::with(['city', 'orderItems.menuItem', 'user'])
+        $orders = Order::with(['city', 'orderItems.menuItem', 'user', 'rider'])
             ->whereIn('status', ['pending', 'In Queue', 'preparing', 'out for delivery'])
             ->whereNotNull('delivery_date')
             ->whereNotNull('delivery_time')
@@ -67,6 +68,12 @@ class OrderQueueController extends Controller
                         'id' => $order->city->id,
                         'name' => $order->city->name,
                     ] : null,
+                    'rider_id' => $order->rider_id,
+                    'rider' => $order->rider ? [
+                        'id' => $order->rider->id,
+                        'name' => $order->rider->name,
+                        'phone' => $order->rider->phone,
+                    ] : null,
                     'orderItems' => $order->orderItems->map(function ($item) {
                         return [
                             'id' => $item->id,
@@ -118,9 +125,19 @@ class OrderQueueController extends Controller
             ];
         }
 
+        // Get active riders for assignment
+        $riders = DeliveryRider::where('is_active', true)->orderBy('name')->get()->map(function ($rider) {
+            return [
+                'id' => $rider->id,
+                'name' => $rider->name,
+                'phone' => $rider->phone,
+            ];
+        });
+
         return Inertia::render('Admin/Orders/Queue', [
             'orders' => $ordersCollection,
             'nextOrderInfo' => $nextOrderInfo,
+            'riders' => $riders,
         ]);
     }
 

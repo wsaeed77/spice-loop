@@ -2,11 +2,12 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import Layout from '../../../Components/Layout';
 
-export default function OrderShow({ auth, order, cities, menuItems, flash }) {
+export default function OrderShow({ auth, order, cities, menuItems, riders, flash }) {
     const [editMode, setEditMode] = useState(false);
     const [showAddItemModal, setShowAddItemModal] = useState(false);
     const [addItemType, setAddItemType] = useState('menu'); // 'menu' or 'custom'
     const [removingItemId, setRemovingItemId] = useState(null);
+    const [assigningRider, setAssigningRider] = useState(false);
 
     const statusForm = useForm({
         status: order?.status || 'pending',
@@ -422,6 +423,101 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
                                     {order.status}
                                 </span>
                             </div>
+                        </div>
+
+                        {/* Assign Rider */}
+                        <div className="bg-white rounded-lg shadow-md p-6 border border-spice-orange">
+                            <h2 className="text-2xl font-bold text-spice-maroon mb-4">Assign Delivery Rider</h2>
+                            {order.rider ? (
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-sm text-gray-500">Assigned Rider</p>
+                                        <p className="font-semibold text-gray-900">{order.rider.name}</p>
+                                        <p className="text-sm text-gray-600">{order.rider.phone}</p>
+                                    </div>
+                                    {riders && riders.length > 0 && (
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            setAssigningRider(true);
+                                            router.post(`/admin/orders/${order.id}/assign-rider`, {
+                                                rider_id: e.target.rider_id.value,
+                                            }, {
+                                                preserveScroll: true,
+                                                onFinish: () => setAssigningRider(false),
+                                            });
+                                        }}>
+                                            <div className="mb-3">
+                                                <label htmlFor="rider_id" className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Change Rider
+                                                </label>
+                                                <select
+                                                    id="rider_id"
+                                                    name="rider_id"
+                                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                                    required
+                                                >
+                                                    <option value="">Select a rider</option>
+                                                    {riders.map((rider) => (
+                                                        <option key={rider.id} value={rider.id}>
+                                                            {rider.name} - {rider.phone}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                disabled={assigningRider}
+                                                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition disabled:opacity-50"
+                                            >
+                                                {assigningRider ? 'Assigning...' : 'Reassign Rider'}
+                                            </button>
+                                        </form>
+                                    )}
+                                </div>
+                            ) : (
+                                riders && riders.length > 0 ? (
+                                    <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        setAssigningRider(true);
+                                        router.post(`/admin/orders/${order.id}/assign-rider`, {
+                                            rider_id: e.target.rider_id.value,
+                                        }, {
+                                            preserveScroll: true,
+                                            onFinish: () => setAssigningRider(false),
+                                        });
+                                    }}>
+                                        <div className="mb-3">
+                                            <label htmlFor="rider_id" className="block text-sm font-medium text-gray-700 mb-2">
+                                                Select Rider *
+                                            </label>
+                                            <select
+                                                id="rider_id"
+                                                name="rider_id"
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-spice-orange focus:border-spice-orange"
+                                                required
+                                            >
+                                                <option value="">Select a rider</option>
+                                                {riders.map((rider) => (
+                                                    <option key={rider.id} value={rider.id}>
+                                                        {rider.name} - {rider.phone}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={assigningRider}
+                                            className="w-full px-4 py-2 bg-spice-orange hover:bg-spice-gold text-white rounded-lg font-semibold transition disabled:opacity-50"
+                                        >
+                                            {assigningRider ? 'Assigning...' : 'Assign Rider & Send SMS'}
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <p className="text-gray-500 text-sm">
+                                        No active riders available. <Link href="/admin/riders/create" className="text-spice-orange hover:text-spice-maroon">Create a rider</Link>
+                                    </p>
+                                )
+                            )}
                         </div>
 
                         {/* Order Information */}

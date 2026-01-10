@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\City;
+use App\Models\DeliveryRider;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -163,7 +165,7 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['city', 'orderItems.menuItem', 'orderItems.menuItem.options', 'user'])->findOrFail($id);
+        $order = Order::with(['city', 'orderItems.menuItem', 'orderItems.menuItem.options', 'user', 'rider'])->findOrFail($id);
         $cities = City::where('is_active', true)->orderBy('name')->get()->map(function ($city) {
             return [
                 'id' => $city->id,
@@ -188,6 +190,13 @@ class OrderController extends Controller
                     }) : [],
                 ];
             });
+        $riders = DeliveryRider::where('is_active', true)->orderBy('name')->get()->map(function ($rider) {
+            return [
+                'id' => $rider->id,
+                'name' => $rider->name,
+                'phone' => $rider->phone,
+            ];
+        });
 
         return Inertia::render('Admin/Orders/Show', [
             'order' => [
@@ -219,6 +228,12 @@ class OrderController extends Controller
                     'name' => $order->user->name,
                     'email' => $order->user->email,
                 ] : null,
+                'rider_id' => $order->rider_id,
+                'rider' => $order->rider ? [
+                    'id' => $order->rider->id,
+                    'name' => $order->rider->name,
+                    'phone' => $order->rider->phone,
+                ] : null,
                 'orderItems' => $order->orderItems->map(function ($item) {
                     return [
                         'id' => $item->id,
@@ -245,6 +260,7 @@ class OrderController extends Controller
             ],
             'cities' => $cities,
             'menuItems' => $menuItems,
+            'riders' => $riders,
         ]);
     }
 
@@ -361,6 +377,44 @@ class OrderController extends Controller
         $order->update(['total_amount' => $totalAmount]);
 
         return redirect()->back()->with('message', 'Menu item removed successfully!');
+    }
+
+    public function assignRider(Request $request, $id)
+    {
+        $order = Order::with(['city', 'orderItems.menuItem', 'rider'])->findOrFail($id);
+
+        $validated = $request->validate([
+            'rider_id' => 'required|exists:delivery_riders,id',
+        ]);
+
+        $rider = DeliveryRider::findOrFail($validated['rider_id']);
+
+        // Update order with rider assignment
+        $order->rider_id = $validated['rider_id'];
+        $order->save();
+
+        // Refresh order relationship
+        $order->refresh();
+
+        // Send SMS to rider with order details
+        $smsSent = false;
+        try {
+            $smsService = new SmsService();
+            $smsSent = $smsService->sendOrderAssignmentToRider($order, $rider);
+        } catch (\Throwable $e) {
+            \Log::error('Failed to send SMS to rider: ' . $e->getMessage(), [
+                'exception' => $e,
+                'exception_class' => get_class($e),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Continue even if SMS fails
+        }
+
+        if ($smsSent) {
+            return redirect()->back()->with('message', "Order assigned to {$rider->name}. SMS sent to {$rider->phone}!");
+        } else {
+            return redirect()->back()->with('message', "Order assigned to {$rider->name}. SMS could not be sent (check logs for details).")->with('warning', true);
+        }
     }
 
     public function destroy($id)
