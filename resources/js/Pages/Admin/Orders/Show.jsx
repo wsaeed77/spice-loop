@@ -27,6 +27,8 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
         custom_item_name: '',
         price: '',
         quantity: 1,
+    }, {
+        resetOnSuccess: false,
     });
 
     const handleStatusUpdate = (e) => {
@@ -48,29 +50,59 @@ export default function OrderShow({ auth, order, cities, menuItems, flash }) {
 
     const handleAddItem = (e) => {
         e.preventDefault();
-        // Ensure the form data is properly structured based on item type
-        const formData = {
-            ...addItemForm.data,
+        
+        // Validate required fields
+        if (addItemType === 'custom') {
+            if (!addItemForm.data.custom_item_name || !addItemForm.data.price) {
+                alert('Please fill in all required fields for custom item.');
+                return;
+            }
+        } else {
+            if (!addItemForm.data.menu_item_id) {
+                alert('Please select a menu item.');
+                return;
+            }
+        }
+        
+        // Prepare form data based on item type
+        let submitData = {
             quantity: parseInt(addItemForm.data.quantity) || 1,
         };
         
-        // If custom item, ensure menu_item_id is null
         if (addItemType === 'custom') {
-            formData.menu_item_id = null;
-            formData.menu_item_option_id = null;
-            formData.price = parseFloat(formData.price) || 0;
+            // Custom item
+            submitData.custom_item_name = addItemForm.data.custom_item_name;
+            submitData.price = parseFloat(addItemForm.data.price);
+            submitData.menu_item_id = null;
+            submitData.menu_item_option_id = null;
         } else {
-            // If menu item, ensure custom fields are null
-            formData.custom_item_name = null;
-            formData.price = null;
+            // Menu item
+            submitData.menu_item_id = addItemForm.data.menu_item_id;
+            submitData.menu_item_option_id = addItemForm.data.menu_item_option_id || null;
+            submitData.custom_item_name = null;
+            submitData.price = null;
         }
         
-        addItemForm.transform(() => formData).post(`/admin/orders/${order.id}/items`, {
+        // Use router.post directly to avoid form state issues
+        router.post(`/admin/orders/${order.id}/items`, submitData, {
             preserveScroll: true,
             onSuccess: () => {
                 setShowAddItemModal(false);
                 setAddItemType('menu');
                 addItemForm.reset();
+            },
+            onError: (errors) => {
+                console.error('Error adding item:', errors);
+                // Display validation errors
+                if (errors.custom_item_name) {
+                    alert('Custom item name error: ' + errors.custom_item_name);
+                }
+                if (errors.price) {
+                    alert('Price error: ' + errors.price);
+                }
+                if (errors.menu_item_id) {
+                    alert('Menu item error: ' + errors.menu_item_id);
+                }
             },
         });
     };
