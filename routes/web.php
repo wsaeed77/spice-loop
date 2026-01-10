@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\CostCalculatorController;
 use App\Http\Controllers\Admin\DeliveryRiderController;
 use App\Http\Controllers\Admin\MenuItemCalculatorController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OrderQueueController;
@@ -132,6 +133,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/riders/{id}/edit', [DeliveryRiderController::class, 'edit'])->name('riders.edit');
     Route::patch('/riders/{id}', [DeliveryRiderController::class, 'update'])->name('riders.update');
     Route::delete('/riders/{id}', [DeliveryRiderController::class, 'destroy'])->name('riders.destroy');
+    
+    // Reports Dashboard
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     
     // Catering Management
     Route::get('/catering', [AdminCateringController::class, 'index'])->name('catering.index');
