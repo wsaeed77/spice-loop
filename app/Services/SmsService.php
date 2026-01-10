@@ -209,55 +209,32 @@ class SmsService
      */
     public function sendOrderAssignmentToRider(\App\Models\Order $order, \App\Models\DeliveryRider $rider): bool
     {
-        // Calculate daily order number
-        $orderDate = \Carbon\Carbon::parse($order->created_at)->startOfDay();
-        $dailyOrderNumber = \App\Models\Order::whereDate('created_at', $orderDate->format('Y-m-d'))
-            ->where(function($query) use ($order) {
-                $query->where('created_at', '<', $order->created_at)
-                    ->orWhere(function($q) use ($order) {
-                        $q->where('created_at', $order->created_at)
-                          ->where('id', '<=', $order->id);
-                    });
-            })
-            ->count();
-        
         $deliveryDate = $order->delivery_date ? \Carbon\Carbon::parse($order->delivery_date)->format('d M Y') : 'N/A';
         $deliveryTime = $order->delivery_time ? (is_string($order->delivery_time) ? substr($order->delivery_time, 0, 5) : $order->delivery_time->format('H:i')) : 'N/A';
         
         // Load relationships if not already loaded
-        if (!$order->relationLoaded('city')) {
-            $order->load('city');
-        }
         if (!$order->relationLoaded('orderItems')) {
             $order->load('orderItems.menuItem');
         }
         
-        $message = "NEW DELIVERY ASSIGNED\n\n";
-        $message .= "Order #{$dailyOrderNumber}\n";
-        $message .= "Customer: {$order->customer_name}\n";
-        $message .= "Phone: {$order->customer_phone}\n";
-        $message .= "Address: {$order->customer_address}";
+        // Format address with postcode
+        $address = $order->customer_address;
         if ($order->customer_postcode) {
-            $message .= ", {$order->customer_postcode}";
+            $address .= ', ' . $order->customer_postcode;
         }
-        $message .= "\n";
-        if ($order->city) {
-            $message .= "City: {$order->city->name}\n";
-        }
-        $message .= "Delivery: {$deliveryDate} at {$deliveryTime}\n";
-        if ($order->delivery_distance) {
-            $message .= "Drive time: {$order->delivery_distance} minutes\n";
-        }
-        $message .= "Total: £" . number_format($order->total_amount, 2) . "\n\n";
         
+        // Build message with exact format and spacing as shown in image
+        $message = "Phone: {$order->customer_phone}\n";
+        $message .= "Address: {$address}\n";
+        $message .= "Delivery: {$deliveryDate} at {$deliveryTime}\n";
+        $message .= "\n";
+        $message .= "Total: £" . number_format($order->total_amount, 2) . "\n";
+        $message .= "\n";
         $message .= "Items:\n";
         foreach ($order->orderItems as $item) {
             $itemName = $item->custom_item_name ? $item->custom_item_name : ($item->menuItem->name ?? 'Unknown Item');
-            $message .= "- {$itemName} x{$item->quantity} (£" . number_format($item->price * $item->quantity, 2) . ")\n";
-        }
-        
-        if ($order->notes) {
-            $message .= "\nNotes: {$order->notes}";
+            $itemTotal = $item->price * $item->quantity;
+            $message .= "{$itemName} x{$item->quantity} (£" . number_format($itemTotal, 2) . ")\n";
         }
 
         // Normalize phone number format (ensure E.164 format)
