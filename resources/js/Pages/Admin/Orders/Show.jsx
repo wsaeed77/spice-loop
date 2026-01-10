@@ -336,12 +336,31 @@ export default function OrderShow({ auth, order, cities, menuItems, riders, flas
                                 <div>
                                     <p className="text-sm text-gray-500">Delivery Time</p>
                                     {editMode ? (
-                                        <input
-                                            type="time"
-                                            value={orderForm.data.delivery_time || ''}
-                                            onChange={(e) => orderForm.setData('delivery_time', e.target.value)}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
-                                        />
+                                        <>
+                                            <input
+                                                type="time"
+                                                value={orderForm.data.delivery_time || ''}
+                                                onChange={(e) => {
+                                                    // Ensure time is in HH:MM format (24-hour)
+                                                    const timeValue = e.target.value;
+                                                    if (timeValue) {
+                                                        orderForm.setData('delivery_time', timeValue);
+                                                    } else {
+                                                        orderForm.setData('delivery_time', '');
+                                                    }
+                                                }}
+                                                onBlur={(e) => {
+                                                    // Normalize time on blur to ensure proper format
+                                                    const timeValue = e.target.value;
+                                                    if (timeValue && timeValue.match(/^\d{2}:\d{2}$/)) {
+                                                        orderForm.setData('delivery_time', timeValue);
+                                                    }
+                                                }}
+                                                step="60"
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Format: 24-hour (e.g., 14:30 for 2:30 PM)</p>
+                                        </>
                                     ) : (
                                         <p className="font-semibold text-gray-900">{order.delivery_time || 'N/A'}</p>
                                     )}

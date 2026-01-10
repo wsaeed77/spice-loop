@@ -267,10 +267,27 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
                                     <input
                                         type="time"
                                         value={data.delivery_time}
-                                        onChange={(e) => setData('delivery_time', e.target.value)}
+                                        onChange={(e) => {
+                                            // Ensure time is in HH:MM format (24-hour)
+                                            const timeValue = e.target.value;
+                                            if (timeValue) {
+                                                setData('delivery_time', timeValue);
+                                            } else {
+                                                setData('delivery_time', '');
+                                            }
+                                        }}
+                                        onBlur={(e) => {
+                                            // Normalize time on blur to ensure proper format
+                                            const timeValue = e.target.value;
+                                            if (timeValue && timeValue.match(/^\d{2}:\d{2}$/)) {
+                                                setData('delivery_time', timeValue);
+                                            }
+                                        }}
+                                        step="60"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2"
                                         required
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">Format: 24-hour (e.g., 14:30 for 2:30 PM)</p>
                                     {errors.delivery_time && <p className="text-red-500 text-sm mt-1">{errors.delivery_time}</p>}
                                 </div>
 

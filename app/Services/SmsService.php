@@ -141,23 +141,59 @@ class SmsService
             return false;
         }
 
+        // Normalize phone numbers to E.164 format
+        $normalizedTo = $this->normalizePhoneNumber($toPhoneNumber);
+        $normalizedFrom = $this->normalizePhoneNumber($fromNumber);
+
         try {
             $this->client->messages->create(
-                $toPhoneNumber,
+                $normalizedTo,
                 [
-                    'from' => $fromNumber,
+                    'from' => $normalizedFrom,
                     'body' => $message,
                 ]
             );
 
-            Log::info('SMS sent successfully to ' . $toPhoneNumber);
+            Log::info('SMS sent successfully', [
+                'to' => $normalizedTo,
+                'from' => $normalizedFrom
+            ]);
             return true;
+        } catch (\Twilio\Exceptions\TwilioException $e) {
+            // Twilio-specific exceptions
+            $errorMessage = $e->getMessage();
+            $errorCode = $e->getCode();
+            
+            // Check for common Twilio errors
+            $userFriendlyMessage = $errorMessage;
+            if (str_contains($errorMessage, 'Unable to create record')) {
+                if (str_contains($errorMessage, 'From')) {
+                    $userFriendlyMessage = "Invalid 'From' phone number ({$normalizedFrom}). Please verify this number is active in your Twilio account and has SMS capabilities enabled.";
+                } elseif (str_contains($errorMessage, 'To')) {
+                    $userFriendlyMessage = "Invalid 'To' phone number ({$normalizedTo}). For trial accounts, you can only send to verified numbers. Verify the number in Twilio Console or upgrade your account.";
+                } else {
+                    $userFriendlyMessage = "Cannot send SMS with these phone numbers. Check that both numbers are valid and your Twilio account has proper permissions.";
+                }
+            } elseif (str_contains($errorMessage, 'not a valid')) {
+                $userFriendlyMessage = "Phone number format is invalid. Ensure numbers are in E.164 format (e.g., +447857110325).";
+            } elseif (str_contains($errorMessage, 'trial')) {
+                $userFriendlyMessage = "Trial account restriction: You can only send SMS to verified phone numbers. Add this number in Twilio Console or upgrade your account.";
+            }
+
+            Log::error('Failed to send SMS (Twilio Error): ' . $userFriendlyMessage, [
+                'original_error' => $errorMessage,
+                'error_code' => $errorCode,
+                'from' => $normalizedFrom,
+                'to' => $normalizedTo,
+                'exception_class' => get_class($e)
+            ]);
+            return false;
         } catch (\Throwable $e) {
             Log::error('Failed to send SMS: ' . $e->getMessage(), [
                 'exception' => $e,
                 'exception_class' => get_class($e),
-                'from' => $fromNumber,
-                'to' => $toPhoneNumber,
+                'from' => $normalizedFrom,
+                'to' => $normalizedTo,
                 'trace' => $e->getTraceAsString()
             ]);
             return false;
@@ -224,7 +260,39 @@ class SmsService
             $message .= "\nNotes: {$order->notes}";
         }
 
-        return $this->sendToPhone($rider->phone, $message);
+        // Normalize phone number format (ensure E.164 format)
+        $phoneNumber = $this->normalizePhoneNumber($rider->phone);
+        
+        return $this->sendToPhone($phoneNumber, $message);
+    }
+
+    /**
+     * Normalize phone number to E.164 format (required by Twilio)
+     * 
+     * @param string $phone
+     * @return string
+     */
+    private function normalizePhoneNumber(string $phone): string
+    {
+        // Remove all non-digit characters except +
+        $phone = preg_replace('/[^\d+]/', '', $phone);
+        
+        // If phone doesn't start with +, assume UK number and add +44
+        if (substr($phone, 0, 1) !== '+') {
+            // Remove leading 0 if present
+            if (substr($phone, 0, 1) === '0') {
+                $phone = substr($phone, 1);
+            }
+            $phone = '+44' . $phone;
+        }
+        
+        // Ensure +44 format (UK) is correct - remove duplicate +44 if present
+        if (substr($phone, 0, 3) === '+44') {
+            // Remove any duplicate +44 prefix
+            $phone = '+44' . preg_replace('/^\+44/', '', $phone);
+        }
+        
+        return $phone;
     }
 }
 

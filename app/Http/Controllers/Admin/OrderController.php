@@ -56,7 +56,7 @@ class OrderController extends Controller
             'customer_address' => 'required|string',
             'customer_postcode' => 'nullable|string|max:20',
             'delivery_date' => 'required|date|after_or_equal:today',
-            'delivery_time' => 'required|date_format:H:i',
+            'delivery_time' => ['required', 'regex:/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/'],
             'delivery_distance' => 'nullable|integer|min:0',
             'allergies' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -107,7 +107,7 @@ class OrderController extends Controller
                 'customer_address' => $validated['customer_address'],
                 'customer_postcode' => !empty($validated['customer_postcode']) ? $validated['customer_postcode'] : null,
                 'delivery_date' => $validated['delivery_date'],
-                'delivery_time' => $validated['delivery_time'],
+                'delivery_time' => $this->normalizeTime($validated['delivery_time']),
                 'delivery_distance' => !empty($validated['delivery_distance']) ? $validated['delivery_distance'] : null,
                 'allergies' => !empty($validated['allergies']) ? $validated['allergies'] : null,
                 'notes' => !empty($validated['notes']) ? $validated['notes'] : null,
@@ -276,12 +276,17 @@ class OrderController extends Controller
             'customer_address' => 'sometimes|required|string',
             'customer_postcode' => 'nullable|string|max:20',
             'delivery_date' => 'sometimes|required|date',
-            'delivery_time' => 'sometimes|required|date_format:H:i',
+            'delivery_time' => ['sometimes', 'required', 'regex:/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/'],
             'delivery_distance' => 'nullable|integer|min:0',
             'allergies' => 'nullable|string',
             'notes' => 'nullable|string',
             'delivery_charge' => 'nullable|numeric|min:0',
         ]);
+
+        // Normalize time before updating
+        if (isset($validated['delivery_time'])) {
+            $validated['delivery_time'] = $this->normalizeTime($validated['delivery_time']);
+        }
 
         $order->update($validated);
 
@@ -427,6 +432,43 @@ class OrderController extends Controller
 
         return redirect()->route('admin.orders.index')
             ->with('message', "Order #{$orderId} has been deleted successfully!");
+    }
+
+    /**
+     * Normalize time to HH:MM format (24-hour)
+     * 
+     * @param string $time
+     * @return string
+     */
+    private function normalizeTime($time)
+    {
+        if (empty($time)) {
+            return $time;
+        }
+
+        // If already in HH:MM format, return as is
+        if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $time)) {
+            // Ensure it's always HH:MM (two digits for hour)
+            $parts = explode(':', $time);
+            $hour = str_pad($parts[0], 2, '0', STR_PAD_LEFT);
+            $minute = str_pad($parts[1], 2, '0', STR_PAD_LEFT);
+            return $hour . ':' . $minute;
+        }
+
+        // Try to parse other formats
+        try {
+            $dateTime = \Carbon\Carbon::createFromFormat('H:i', $time);
+            return $dateTime->format('H:i');
+        } catch (\Exception $e) {
+            // If parsing fails, try to extract time from string
+            if (preg_match('/(\d{1,2}):(\d{2})/', $time, $matches)) {
+                $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                $minute = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                return $hour . ':' . $minute;
+            }
+        }
+
+        return $time;
     }
 
     /**
