@@ -2,6 +2,93 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import Layout from '../../../Components/Layout';
 
+// Convert 12-hour format (with AM/PM) to 24-hour format
+function convertTo24Hour(timeString) {
+    if (!timeString) return '';
+    
+    // Remove extra spaces and convert to uppercase
+    timeString = timeString.trim().toUpperCase();
+    
+    // Check if it's already in 24-hour format (HH:MM or H:MM)
+    const time24Regex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+    if (time24Regex.test(timeString)) {
+        // Ensure it's HH:MM format (two digits for hour)
+        const parts = timeString.split(':');
+        const hour = parts[0].padStart(2, '0');
+        const minute = parts[1].padStart(2, '0');
+        return `${hour}:${minute}`;
+    }
+    
+    // Try to parse 12-hour format with AM/PM
+    const time12Regex = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+    const match = timeString.match(time12Regex);
+    
+    if (match) {
+        let hour = parseInt(match[1], 10);
+        const minute = match[2].padStart(2, '0');
+        const period = match[3].toUpperCase();
+        
+        if (hour === 12) {
+            hour = period === 'AM' ? 0 : 12;
+        } else if (period === 'PM') {
+            hour += 12;
+        }
+        
+        return `${hour.toString().padStart(2, '0')}:${minute}`;
+    }
+    
+    // Try to parse format like "2:30PM" (no space)
+    const time12NoSpaceRegex = /^(\d{1,2}):(\d{2})(AM|PM)$/i;
+    const matchNoSpace = timeString.match(time12NoSpaceRegex);
+    
+    if (matchNoSpace) {
+        let hour = parseInt(matchNoSpace[1], 10);
+        const minute = matchNoSpace[2].padStart(2, '0');
+        const period = matchNoSpace[3].toUpperCase();
+        
+        if (hour === 12) {
+            hour = period === 'AM' ? 0 : 12;
+        } else if (period === 'PM') {
+            hour += 12;
+        }
+        
+        return `${hour.toString().padStart(2, '0')}:${minute}`;
+    }
+    
+    return null;
+}
+
+// Fix time format - attempt to fix common formatting issues
+function fixTimeFormat(timeString) {
+    if (!timeString) return '';
+    
+    timeString = timeString.trim();
+    
+    // Remove all non-digit and colon characters except AM/PM
+    let cleaned = timeString.replace(/[^\d:APM]/gi, '');
+    
+    // Try to extract time pattern
+    const timePattern = /(\d{1,2}):?(\d{0,2})\s*(AM|PM)?/i;
+    const match = cleaned.match(timePattern);
+    
+    if (match) {
+        let hour = parseInt(match[1] || '0', 10);
+        let minute = match[2] || '00';
+        const period = match[3];
+        
+        if (minute.length === 1) minute = minute.padStart(2, '0');
+        if (minute.length > 2) minute = minute.substring(0, 2);
+        
+        if (period) {
+            return convertTo24Hour(`${hour}:${minute} ${period}`);
+        } else if (hour <= 23 && minute.length === 2) {
+            return `${hour.toString().padStart(2, '0')}:${minute}`;
+        }
+    }
+    
+    return null;
+}
+
 export default function OrderShow({ auth, order, cities, menuItems, riders, flash }) {
     const [editMode, setEditMode] = useState(false);
     const [showAddItemModal, setShowAddItemModal] = useState(false);
@@ -41,6 +128,23 @@ export default function OrderShow({ auth, order, cities, menuItems, riders, flas
 
     const handleOrderUpdate = (e) => {
         e.preventDefault();
+        
+        // Normalize delivery time before submission (convert AM/PM to 24-hour)
+        let normalizedTime = orderForm.data.delivery_time;
+        if (normalizedTime) {
+            const converted = convertTo24Hour(normalizedTime);
+            if (converted) {
+                normalizedTime = converted;
+            } else {
+                const fixed = fixTimeFormat(normalizedTime);
+                if (fixed) {
+                    normalizedTime = fixed;
+                }
+            }
+            // Update the form data with normalized time
+            orderForm.setData('delivery_time', normalizedTime);
+        }
+        
         orderForm.patch(`/admin/orders/${order.id}`, {
             preserveScroll: true,
             onSuccess: () => {
@@ -338,28 +442,30 @@ export default function OrderShow({ auth, order, cities, menuItems, riders, flas
                                     {editMode ? (
                                         <>
                                             <input
-                                                type="time"
+                                                type="text"
                                                 value={orderForm.data.delivery_time || ''}
                                                 onChange={(e) => {
-                                                    // Ensure time is in HH:MM format (24-hour)
-                                                    const timeValue = e.target.value;
-                                                    if (timeValue) {
-                                                        orderForm.setData('delivery_time', timeValue);
-                                                    } else {
-                                                        orderForm.setData('delivery_time', '');
-                                                    }
+                                                    let timeValue = e.target.value;
+                                                    orderForm.setData('delivery_time', timeValue);
                                                 }}
                                                 onBlur={(e) => {
-                                                    // Normalize time on blur to ensure proper format
-                                                    const timeValue = e.target.value;
-                                                    if (timeValue && timeValue.match(/^\d{2}:\d{2}$/)) {
-                                                        orderForm.setData('delivery_time', timeValue);
+                                                    // Convert 12-hour format (with AM/PM) to 24-hour format
+                                                    let timeValue = e.target.value.trim();
+                                                    if (timeValue) {
+                                                        const normalized = convertTo24Hour(timeValue);
+                                                        if (normalized) {
+                                                            orderForm.setData('delivery_time', normalized);
+                                                        } else {
+                                                            // If conversion fails, try to fix format
+                                                            const fixed = fixTimeFormat(timeValue);
+                                                            orderForm.setData('delivery_time', fixed || timeValue);
+                                                        }
                                                     }
                                                 }}
-                                                step="60"
+                                                placeholder="e.g., 2:30 PM or 14:30"
                                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
                                             />
-                                            <p className="text-xs text-gray-500 mt-1">Format: 24-hour (e.g., 14:30 for 2:30 PM)</p>
+                                            <p className="text-xs text-gray-500 mt-1">Format: 2:30 PM, 14:30, or 02:30 (24-hour)</p>
                                         </>
                                     ) : (
                                         <p className="font-semibold text-gray-900">{order.delivery_time || 'N/A'}</p>

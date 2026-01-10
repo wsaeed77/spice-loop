@@ -56,7 +56,16 @@ class OrderController extends Controller
             'customer_address' => 'required|string',
             'customer_postcode' => 'nullable|string|max:20',
             'delivery_date' => 'required|date|after_or_equal:today',
-            'delivery_time' => ['required', 'regex:/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/'],
+            'delivery_time' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    // Accept both 12-hour (with AM/PM) and 24-hour formats
+                    $normalized = $this->normalizeTime($value);
+                    if (!$normalized || !preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]$/', $normalized)) {
+                        $fail('The delivery time must be in valid format (e.g., 2:30 PM, 14:30, or 02:30).');
+                    }
+                }
+            ],
             'delivery_distance' => 'nullable|integer|min:0',
             'allergies' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -436,39 +445,96 @@ class OrderController extends Controller
 
     /**
      * Normalize time to HH:MM format (24-hour)
+     * Supports both 12-hour (AM/PM) and 24-hour formats
      * 
      * @param string $time
-     * @return string
+     * @return string|null
      */
     private function normalizeTime($time)
     {
         if (empty($time)) {
-            return $time;
+            return null;
         }
 
-        // If already in HH:MM format, return as is
-        if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $time)) {
+        $time = trim($time);
+        
+        // Check if already in 24-hour format (HH:MM or H:MM)
+        if (preg_match('/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/', $time, $matches)) {
             // Ensure it's always HH:MM (two digits for hour)
-            $parts = explode(':', $time);
-            $hour = str_pad($parts[0], 2, '0', STR_PAD_LEFT);
-            $minute = str_pad($parts[1], 2, '0', STR_PAD_LEFT);
+            $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+            $minute = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
             return $hour . ':' . $minute;
         }
 
-        // Try to parse other formats
+        // Try to parse 12-hour format with AM/PM
+        // Match patterns like "2:30 PM", "2:30PM", "02:30 PM", etc.
+        if (preg_match('/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i', $time, $matches)) {
+            $hour = (int)$matches[1];
+            $minute = $matches[2];
+            $period = strtoupper($matches[3]);
+            
+            // Convert to 24-hour format
+            if ($hour == 12) {
+                $hour = ($period == 'AM') ? 0 : 12;
+            } elseif ($period == 'PM') {
+                $hour += 12;
+            }
+            
+            // Ensure hour doesn't exceed 23
+            if ($hour > 23) {
+                $hour = 23;
+            }
+            
+            return str_pad($hour, 2, '0', STR_PAD_LEFT) . ':' . $minute;
+        }
+        
+        // Try format without space: "2:30PM"
+        if (preg_match('/^(\d{1,2}):(\d{2})(AM|PM)$/i', $time, $matches)) {
+            $hour = (int)$matches[1];
+            $minute = $matches[2];
+            $period = strtoupper($matches[3]);
+            
+            if ($hour == 12) {
+                $hour = ($period == 'AM') ? 0 : 12;
+            } elseif ($period == 'PM') {
+                $hour += 12;
+            }
+            
+            if ($hour > 23) {
+                $hour = 23;
+            }
+            
+            return str_pad($hour, 2, '0', STR_PAD_LEFT) . ':' . $minute;
+        }
+
+        // Try to extract time from string with Carbon
         try {
-            $dateTime = \Carbon\Carbon::createFromFormat('H:i', $time);
-            return $dateTime->format('H:i');
+            // Try common time formats
+            $formats = ['H:i', 'g:i A', 'g:iA', 'h:i A', 'h:iA'];
+            foreach ($formats as $format) {
+                try {
+                    $dateTime = \Carbon\Carbon::createFromFormat($format, $time);
+                    return $dateTime->format('H:i');
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
         } catch (\Exception $e) {
-            // If parsing fails, try to extract time from string
-            if (preg_match('/(\d{1,2}):(\d{2})/', $time, $matches)) {
-                $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
-                $minute = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
-                return $hour . ':' . $minute;
+            // Continue to fallback
+        }
+
+        // Final fallback: try to extract HH:MM pattern
+        if (preg_match('/(\d{1,2}):(\d{2})/', $time, $matches)) {
+            $hour = (int)$matches[1];
+            $minute = $matches[2];
+            
+            // If hour seems reasonable (0-23), use it
+            if ($hour >= 0 && $hour <= 23 && strlen($minute) == 2) {
+                return str_pad($hour, 2, '0', STR_PAD_LEFT) . ':' . $minute;
             }
         }
 
-        return $time;
+        return null;
     }
 
     /**
