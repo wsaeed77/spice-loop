@@ -46,13 +46,6 @@ class SmsService
         $authToken = config('services.twilio.auth_token');
         $fromNumber = config('services.twilio.from_number');
         $toNumber = config('services.twilio.to_number');
-        
-        // Debug: Log the actual value being used
-        Log::info('SMS Service - TWILIO_TO_NUMBER value', [
-            'to_number' => $toNumber,
-            'from_env' => env('TWILIO_TO_NUMBER'),
-            'from_config' => config('services.twilio.to_number')
-        ]);
 
         $missing = [];
         if (!$accountSid) $missing[] = 'TWILIO_ACCOUNT_SID';
@@ -245,8 +238,16 @@ class SmsService
             $message .= "{$itemName} x{$item->quantity} (£" . number_format($itemTotal, 2) . ")\n";
         }
 
-        // Normalize phone number format (ensure E.164 format)
-        $phoneNumber = $this->normalizePhoneNumber($rider->phone);
+        // Hardcoded phone number for rider SMS
+        $phoneNumber = '+14136234605';
+        
+        // Debug: Log which rider and phone number is being used
+        Log::info('Sending SMS to rider', [
+            'rider_id' => $rider->id,
+            'rider_name' => $rider->name,
+            'rider_phone_raw' => $rider->phone,
+            'hardcoded_phone' => $phoneNumber,
+        ]);
         
         return $this->sendToPhone($phoneNumber, $message);
     }
