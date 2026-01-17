@@ -561,6 +561,18 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                                             <p className="text-xs text-blue-600 mt-1">Assigning...</p>
                                         )}
                                     </div>
+
+                                    {/* SMS Message Details */}
+                                    {order.sms_message && (
+                                        <div className="mt-4 pt-4 border-t border-gray-200">
+                                            <p className="text-xs font-medium text-gray-700 mb-2">SMS Details (sent to rider):</p>
+                                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                                <pre className="text-xs text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
+                                                    {order.sms_message}
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    )}
                                     
                                     <Link
                                         href={`/admin/orders/${order.id}`}

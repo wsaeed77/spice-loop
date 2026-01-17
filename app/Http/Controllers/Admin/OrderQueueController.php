@@ -87,6 +87,7 @@ class OrderQueueController extends Controller
                             ] : null,
                         ];
                     }),
+                    'sms_message' => $this->formatSmsMessage($order),
                     'created_at' => $order->created_at,
                 ];
             })
@@ -171,6 +172,43 @@ class OrderQueueController extends Controller
             ->count();
         
         return $dailyOrderNumber;
+    }
+
+    /**
+     * Format SMS message for display (same format as sent to rider)
+     */
+    private function formatSmsMessage($order)
+    {
+        $deliveryDate = $order->delivery_date ? Carbon::parse($order->delivery_date)->format('d M Y') : 'N/A';
+        $deliveryTime = $order->delivery_time ? (is_string($order->delivery_time) ? substr($order->delivery_time, 0, 5) : $order->delivery_time->format('H:i')) : 'N/A';
+        
+        // Format address with postcode
+        $address = $order->customer_address;
+        if ($order->customer_postcode) {
+            $address .= ', ' . $order->customer_postcode;
+        }
+        
+        // Build message with exact format and spacing as shown in SMS
+        $message = "Phone: {$order->customer_phone}\n";
+        $message .= "Address: {$address}\n";
+        $message .= "Delivery: {$deliveryDate} at {$deliveryTime}\n";
+        $message .= "\n";
+        $message .= "Total: £" . number_format($order->total_amount, 2) . "\n";
+        $message .= "\n";
+        $message .= "Items:\n";
+        
+        // Load order items if not already loaded
+        if (!$order->relationLoaded('orderItems')) {
+            $order->load('orderItems.menuItem');
+        }
+        
+        foreach ($order->orderItems as $item) {
+            $itemName = $item->custom_item_name ? $item->custom_item_name : ($item->menuItem->name ?? 'Unknown Item');
+            $itemTotal = $item->price * $item->quantity;
+            $message .= "{$itemName} x{$item->quantity} (£" . number_format($itemTotal, 2) . ")\n";
+        }
+        
+        return $message;
     }
 }
 
