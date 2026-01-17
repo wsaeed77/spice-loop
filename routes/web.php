@@ -80,6 +80,16 @@ Route::get('/seed-menu', function () {
     return response()->json(['success' => true, 'message' => "Created {$count} menu items successfully!"]);
 });
 
+// Debug route to check Twilio config (REMOVE AFTER DEBUGGING)
+Route::get('/debug-twilio-config', function () {
+    return response()->json([
+        'TWILIO_TO_NUMBER from env()' => env('TWILIO_TO_NUMBER'),
+        'TWILIO_TO_NUMBER from config()' => config('services.twilio.to_number'),
+        'TWILIO_FROM_NUMBER from env()' => env('TWILIO_FROM_NUMBER'),
+        'TWILIO_FROM_NUMBER from config()' => config('services.twilio.from_number'),
+    ]);
+})->middleware('auth');
+
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');

@@ -46,6 +46,13 @@ class SmsService
         $authToken = config('services.twilio.auth_token');
         $fromNumber = config('services.twilio.from_number');
         $toNumber = config('services.twilio.to_number');
+        
+        // Debug: Log the actual value being used
+        Log::info('SMS Service - TWILIO_TO_NUMBER value', [
+            'to_number' => $toNumber,
+            'from_env' => env('TWILIO_TO_NUMBER'),
+            'from_config' => config('services.twilio.to_number')
+        ]);
 
         $missing = [];
         if (!$accountSid) $missing[] = 'TWILIO_ACCOUNT_SID';
