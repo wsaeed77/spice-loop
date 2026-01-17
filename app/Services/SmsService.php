@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Log;
 class SmsService
 {
     protected $client;
-    protected $fromNumber;
-    protected $toNumber;
 
     public function __construct()
     {
@@ -22,8 +20,6 @@ class SmsService
 
         $accountSid = config('services.twilio.account_sid');
         $authToken = config('services.twilio.auth_token');
-        $this->fromNumber = config('services.twilio.from_number');
-        $this->toNumber = config('services.twilio.to_number');
 
         if ($accountSid && $authToken) {
             try {
@@ -82,8 +78,8 @@ class SmsService
             Log::error('Failed to send SMS: ' . $e->getMessage(), [
                 'exception' => $e,
                 'exception_class' => get_class($e),
-                'from' => $this->fromNumber,
-                'to' => $this->toNumber,
+                'from' => $fromNumber,
+                'to' => $toNumber,
                 'trace' => $e->getTraceAsString()
             ]);
             return false;
@@ -136,8 +132,13 @@ class SmsService
             return false;
         }
 
-        if (!$this->client || !$fromNumber) {
+        if (!$this->client) {
             Log::warning('SMS not sent: Twilio client initialization failed');
+            return false;
+        }
+        
+        if (!$fromNumber) {
+            Log::warning('SMS not sent: TWILIO_FROM_NUMBER is not configured');
             return false;
         }
 
