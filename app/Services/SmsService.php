@@ -62,21 +62,21 @@ class SmsService
             return false;
         }
 
-        if (!$this->client || !$this->fromNumber || !$this->toNumber) {
+        if (!$this->client) {
             Log::warning('SMS not sent: Twilio client initialization failed');
             return false;
         }
 
         try {
             $this->client->messages->create(
-                $this->toNumber,
+                $toNumber,
                 [
-                    'from' => $this->fromNumber,
+                    'from' => $fromNumber,
                     'body' => $message,
                 ]
             );
 
-            Log::info('SMS sent successfully to ' . $this->toNumber);
+            Log::info('SMS sent successfully to ' . $toNumber);
             return true;
         } catch (\Throwable $e) {
             Log::error('Failed to send SMS: ' . $e->getMessage(), [
