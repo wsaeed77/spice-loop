@@ -19,16 +19,16 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            
+
             oscillator.frequency.value = 800;
             oscillator.type = 'sine';
-            
+
             gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
+
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.5);
         } catch (err) {
@@ -40,7 +40,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
     useEffect(() => {
         const checkAlerts = () => {
             const now = Date.now();
-            
+
             localOrders.forEach(order => {
                 // Only beep for critical (20 mins) or warning (1 hour) alerts
                 if (order.alert_level === 'critical' || order.alert_level === 'warning') {
@@ -61,7 +61,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                             });
                         }
                     }
-                    
+
                     // Play beep if not snoozed or snooze expired
                     playBeep();
                 }
@@ -70,7 +70,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
 
         // Check immediately
         checkAlerts();
-        
+
         // Check every 15 seconds
         beepIntervalRef.current = setInterval(checkAlerts, 15000); // 15 seconds
 
@@ -113,28 +113,28 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
         if (!nextOrderInfo || !nextOrderInfo.delivery_datetime) {
             return null;
         }
-        
+
         // Calculate current time remaining based on current time
         const now = new Date(currentTime);
         const nextOrderDateTime = new Date(nextOrderInfo.delivery_datetime);
-        
+
         if (isNaN(nextOrderDateTime.getTime())) {
             return nextOrderInfo.time_remaining; // Fallback to server-calculated time
         }
-        
+
         const diffMs = nextOrderDateTime - now;
         const diffMinutes = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMinutes / 60);
         const remainingMinutes = diffMinutes % 60;
-        
+
         if (diffMinutes < 0) {
             return 'Overdue';
         }
-        
+
         if (diffHours > 0) {
             return `${diffHours}h ${remainingMinutes}m`;
         }
-        
+
         return `${remainingMinutes}m`;
     };
 
@@ -143,14 +143,14 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
         if (!nextOrderInfo || !nextOrderInfo.delivery_datetime) {
             return 0;
         }
-        
+
         const now = new Date(currentTime);
         const nextOrderDateTime = new Date(nextOrderInfo.delivery_datetime);
-        
+
         if (isNaN(nextOrderDateTime.getTime())) {
             return nextOrderInfo.raw_minutes_remaining || 0;
         }
-        
+
         const diffMs = nextOrderDateTime - now;
         return Math.floor(diffMs / 60000);
     };
@@ -158,13 +158,13 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
     // Update local orders when props change and clean up snoozed orders
     useEffect(() => {
         setLocalOrders(orders || []);
-        
+
         // Clean up snoozed orders for orders that no longer exist or no longer need alerting
         if (orders && orders.length > 0) {
             setSnoozedOrders(prev => {
                 const updated = { ...prev };
                 const orderIds = orders.map(o => o.id);
-                
+
                 // Remove snoozed entries for orders that no longer exist or don't need alerting
                 Object.keys(updated).forEach(orderId => {
                     const order = orders.find(o => o.id == orderId);
@@ -172,7 +172,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                         delete updated[orderId];
                     }
                 });
-                
+
                 return updated;
             });
         }
@@ -225,7 +225,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
 
     const handleRiderAssignment = (orderId, riderId) => {
         if (!riderId) return;
-        
+
         setAssigningRider(prev => ({ ...prev, [orderId]: true }));
         router.post(`/admin/orders/${orderId}/assign-rider`, {
             rider_id: riderId,
@@ -247,11 +247,11 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
     const getSnoozeTimeRemaining = (orderId) => {
         const snoozedAt = snoozedOrders[orderId];
         if (!snoozedAt) return null;
-        
+
         const now = snoozeDisplayTime; // Use display time for countdown
         const elapsed = now - snoozedAt;
         const remaining = 300000 - elapsed; // 5 minutes = 300000ms
-        
+
         if (remaining <= 0) {
             // Snooze expired, remove from snoozed list
             setSnoozedOrders(prev => {
@@ -261,7 +261,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
             });
             return null;
         }
-        
+
         const minutes = Math.floor(remaining / 60000);
         const seconds = Math.floor((remaining % 60000) / 1000);
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -294,7 +294,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
     return (
         <Layout auth={auth}>
             <Head title="Order Queue - SpiceLoop" />
-            
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8 flex justify-between items-center">
                     <div>
@@ -324,12 +324,12 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                 {(() => {
                     const displayTime = getNextOrderDisplay();
                     const minutesRemaining = getCurrentMinutesRemaining();
-                    
+
                     if (nextOrderInfo && displayTime && minutesRemaining > 0) {
                         return (
                             <div className={`mb-6 p-6 rounded-lg border-2 shadow-lg ${
-                                minutesRemaining <= 20 
-                                    ? 'bg-red-100 border-red-500 text-red-900 animate-pulse' 
+                                minutesRemaining <= 20
+                                    ? 'bg-red-100 border-red-500 text-red-900 animate-pulse'
                                     : minutesRemaining <= 60
                                     ? 'bg-orange-100 border-orange-500 text-orange-900'
                                     : 'bg-blue-100 border-blue-500 text-blue-900'
@@ -395,7 +395,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                                             {formatDate(order.delivery_date)} at {formatTime(order.delivery_time)}
                                         </p>
                                     </div>
-                                    
+
                                     <div>
                                         <p className="text-sm text-gray-500">Time Remaining</p>
                                         <p className={`font-bold text-lg ${
@@ -418,9 +418,6 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                                             {order.customer_address}
                                             {order.customer_postcode && `, ${order.customer_postcode}`}
                                         </p>
-                                        <p className="font-bold text-lg text-gray-900 mt-1">
-                                            Delivery: {formatTime(order.delivery_time)}
-                                        </p>
                                     </div>
 
                                     {order.city && (
@@ -434,6 +431,15 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                                         <p className="text-sm text-gray-500">Total</p>
                                         <p className="font-semibold text-gray-900">£{parseFloat(order.total_amount).toFixed(2)}</p>
                                     </div>
+
+                                    {order.payment_type && (
+                                        <div>
+                                            <p className="text-sm text-gray-500">Payment Type</p>
+                                            <p className="font-semibold text-gray-900 capitalize">
+                                                {order.payment_type.replace('_', ' ')}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="mb-4">
@@ -443,7 +449,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                                             order.orderItems.map((item) => (
                                                 <div key={item.id} className="flex justify-between text-sm">
                                                     <span className="text-gray-700">
-                                                        {item.is_custom || item.custom_item_name 
+                                                        {item.is_custom || item.custom_item_name
                                                             ? item.custom_item_name || 'Custom Item'
                                                             : (item.menuItem?.name || 'Unknown')}
                                                         {(item.is_custom || item.custom_item_name) && (
@@ -573,7 +579,7 @@ export default function OrderQueue({ auth, orders, flash, nextOrderInfo, riders 
                                             </div>
                                         </div>
                                     )}
-                                    
+
                                     <Link
                                         href={`/admin/orders/${order.id}`}
                                         className="mt-3 block text-center text-spice-orange hover:text-spice-maroon text-sm font-semibold"

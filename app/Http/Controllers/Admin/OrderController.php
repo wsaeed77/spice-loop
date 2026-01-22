@@ -76,6 +76,7 @@ class OrderController extends Controller
             'items.*.menu_item_option_id' => 'nullable|exists:menu_item_options,id',
             'items.*.price' => 'required|numeric|min:0',
             'delivery_charge' => 'nullable|numeric|min:0',
+            'payment_type' => 'nullable|in:cash,bank_transfer,card_payment',
         ]);
 
         DB::beginTransaction();
@@ -122,6 +123,7 @@ class OrderController extends Controller
                 'notes' => !empty($validated['notes']) ? $validated['notes'] : null,
                 'total_amount' => $totalAmount,
                 'delivery_charge' => $deliveryCharge,
+                'payment_type' => $validated['payment_type'] ?? null,
                 'status' => 'pending',
             ]);
 
@@ -290,6 +292,7 @@ class OrderController extends Controller
             'allergies' => 'nullable|string',
             'notes' => 'nullable|string',
             'delivery_charge' => 'nullable|numeric|min:0',
+            'payment_type' => 'nullable|in:cash,bank_transfer,card_payment',
         ]);
 
         // Normalize time before updating

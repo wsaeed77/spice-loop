@@ -64,6 +64,7 @@ class OrderQueueController extends Controller
                     'formatted_time_remaining' => $this->formatTimeRemaining($hoursRemaining, $remainingMinutes),
                     'alert_level' => $alertLevel,
                     'total_amount' => $order->total_amount,
+                    'payment_type' => $order->payment_type,
                     'city' => $order->city ? [
                         'id' => $order->city->id,
                         'name' => $order->city->name,

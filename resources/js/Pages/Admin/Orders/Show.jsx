@@ -107,6 +107,7 @@ export default function OrderShow({ auth, order, cities, menuItems, riders, flas
         delivery_time: order?.delivery_time || '',
         delivery_distance: order?.delivery_distance || '',
         delivery_charge: order?.delivery_charge || 0,
+        payment_type: order?.payment_type || '',
     });
 
     const addItemForm = useForm({
@@ -344,6 +345,14 @@ export default function OrderShow({ auth, order, cities, menuItems, riders, flas
                                             £{parseFloat(order.total_amount).toFixed(2)}
                                         </p>
                                     </div>
+                                    {order.payment_type && (
+                                        <div className="pt-2">
+                                            <p className="text-sm text-gray-500">Payment Type</p>
+                                            <p className="font-semibold text-gray-900 capitalize">
+                                                {order.payment_type.replace('_', ' ')}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <p className="text-gray-500">No items in this order.</p>
@@ -507,6 +516,30 @@ export default function OrderShow({ auth, order, cities, menuItems, riders, flas
                                         <p className="font-semibold text-gray-900">{order.notes}</p>
                                     </div>
                                 )}
+                                {editMode ? (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Payment Type
+                                        </label>
+                                        <select
+                                            value={orderForm.data.payment_type || ''}
+                                            onChange={(e) => orderForm.setData('payment_type', e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                                        >
+                                            <option value="">Select payment type</option>
+                                            <option value="cash">Cash</option>
+                                            <option value="bank_transfer">Bank Transfer</option>
+                                            <option value="card_payment">Card Payment</option>
+                                        </select>
+                                    </div>
+                                ) : order.payment_type ? (
+                                    <div>
+                                        <p className="text-sm text-gray-500">Payment Type</p>
+                                        <p className="font-semibold text-gray-900 capitalize">
+                                            {order.payment_type.replace('_', ' ')}
+                                        </p>
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
                     </div>

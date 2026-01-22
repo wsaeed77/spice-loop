@@ -107,6 +107,7 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
         allergies: '',
         notes: '',
         delivery_charge: 0,
+        payment_type: '',
         items: [],
     });
 
@@ -243,6 +244,7 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
                     allergies: '',
                     notes: '',
                     delivery_charge: 0,
+                    payment_type: '',
                     items: [],
                 });
             },
@@ -444,6 +446,21 @@ export default function OrderCreate({ auth, cities, menuItems, flash }) {
                                         className="w-full border border-gray-300 rounded-lg px-4 py-2"
                                     />
                                     {errors.delivery_charge && <p className="text-red-500 text-sm mt-1">{errors.delivery_charge}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Type</label>
+                                    <select
+                                        value={data.payment_type}
+                                        onChange={(e) => setData('payment_type', e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                    >
+                                        <option value="">Select payment type</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                        <option value="card_payment">Card Payment</option>
+                                    </select>
+                                    {errors.payment_type && <p className="text-red-500 text-sm mt-1">{errors.payment_type}</p>}
                                 </div>
 
                                 <div>

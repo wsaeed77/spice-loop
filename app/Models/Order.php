@@ -26,6 +26,7 @@ class Order extends Model
         'delivery_date',
         'delivery_time',
         'delivery_distance',
+        'payment_type',
     ];
 
     protected $casts = [
