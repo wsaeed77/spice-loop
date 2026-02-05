@@ -79,9 +79,9 @@ export default function Layout({ children, auth }) {
         }
 
         const script = document.createElement('script');
-        script.src = "https://www.t2ms.biz/widget";
+        script.src = "https://t2ms-staging.up.railway.app/widget";
         script.setAttribute("data-client-id", "cml9o2fq5000mo40fqve3cmmr");
-        script.setAttribute("data-api", "https://www.t2ms.biz");
+        script.setAttribute("data-api", "https://t2ms-staging.up.railway.app");
         script.defer = true;
 
         // Custom attribute so we know it's already added
