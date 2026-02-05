@@ -1,6 +1,6 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { useState, } from 'react';
+
 import { useCart } from '../contexts/CartContext';
 
 
