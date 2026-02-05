@@ -71,30 +71,6 @@ export default function Layout({ children, auth }) {
     const formattedPhone = settings?.contact_phone ? formatUKPhone(settings.contact_phone) : '';
     const cartItemCount = getCartItemCount();
 
-    // Load T2MS widget script
-    useEffect(() => {
-        // Prevent duplicate loading (important for Inertia navigation)
-        if (document.querySelector('script[data-t2ms-widget]')) {
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.src = "https://t2ms-staging.up.railway.app/widget";
-        script.setAttribute("data-client-id", "cml9o2fq5000mo40fqve3cmmr");
-        script.setAttribute("data-api", "https://t2ms-staging.up.railway.app");
-        script.defer = true;
-
-        // Custom attribute so we know it's already added
-        script.setAttribute("data-t2ms-widget", "true");
-
-        document.body.appendChild(script);
-
-        return () => {
-            // Optional cleanup (usually leave widget loaded globally)
-            // document.body.removeChild(script);
-        };
-    }, []);
-
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-spice-cream to-white">
